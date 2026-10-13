@@ -51,7 +51,7 @@ whenTeam/
 │
 ├── shared/                            # 前后端共享代码
 │   ├── types/                         # 共享数据类型
-│   │   ├── auth.ts
+│   │   ├── user.ts
 │   │   ├── project.ts
 │   │   ├── task.ts
 │   │   └── notification.ts

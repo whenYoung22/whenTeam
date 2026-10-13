@@ -1,0 +1,113 @@
+.project-grid-section {
+  width: 100%;
+}
+
+.project-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.project-grid-heading h1 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.project-grid-heading p {
+  margin: 8px 0 0;
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.project-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 220px;
+  border-radius: 10px;
+
+}
+
+.project-card .ant-card-body {
+  padding: 24px;
+}
+
+.project-card-color {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+}
+
+.project-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  background-color: #f5f7fa;
+  font-size: 18px;
+}
+
+.project-card-name {
+  overflow: hidden;
+  color: #262626;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-card-task-count {
+  margin-top: 8px;
+  color: #8c8c8c;
+  font-size: 13px;
+}
+
+.project-card-progress {
+  margin-top: 22px;
+}
+
+.project-card-progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.project-card-progress-header span:last-child {
+  color: #595959;
+  font-weight: 500;
+}
+
+.project-grid-empty {
+  display: flex;
+  justify-content: center;
+  padding: 64px 0;
+}
+
+@media (max-width: 640px) {
+  .project-grid-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+}

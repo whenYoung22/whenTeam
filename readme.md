@@ -16,6 +16,9 @@
 | 实时通信       | WebSocket                    |
 | 版本管理       | Git                          |
 
+
+
+
 ## 项目结构
 
 ```
@@ -44,6 +47,10 @@ whenTeam/
 └── package.json         # 根目录开发脚本
 ```
 
+
+
+
+
 ## 核心功能
 
 + **用户认证**：登录、退出及身份验证。
@@ -51,8 +58,61 @@ whenTeam/
 + **任务管理**：创建、编辑、删除任务，修改任务状态和优先级。
 + **实时通知**：通过 WebSocket 推送任务状态变更通知。
 
+
+
+
+
 ### 任务属性
 
 + 状态：`TODO`、`DOING`、`DONE`
 + 优先级：`LOW`、`MEDIUM`、`HIGH`
+
+
+
+
+
+## 数据模型
+
+### User
+
+```text
+id
+name
+password
+```
+
+### Project
+
+```text
+id
+name
+description
+createdAt
+```
+
+### Task
+
+```text
+id
+title
+description
+status
+priority
+projectId
+createdAt
+updatedAt
+```
+
+### Notification
+
+```text
+id
+creatorId
+creatorName
+receiverId
+content
+projectId
+isRead
+createdAt
+```
 

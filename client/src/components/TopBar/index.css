@@ -1,0 +1,178 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  height: 76px;
+  min-height: 76px;
+  padding: 0 32px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-left {
+  gap: 16px;
+  min-width: 0;
+}
+
+.topbar-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  line-height: 1;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.topbar-logo:hover {
+  background: #f3f6fa;
+}
+
+/* 箭头图标 */
+.topbar-logo-icon {
+  position: relative;
+  top: 1px;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.topbar-logo:hover .topbar-logo-icon {
+  transform: translateX(-2px);
+}
+
+.topbar-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+
+.topbar-project-name {
+  overflow: hidden;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.topbar-breadcrumb {
+  position: relative;
+  flex-shrink: 0;
+  padding-left: 14px;
+  color: #98a2b3;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.topbar-breadcrumb::before {
+  content: "/";
+  position: absolute;
+  left: 4px;
+  color: #d0d5dd;
+}
+
+.topbar-right {
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.topbar-icon-button.ant-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  color: #667085;
+  font-size: 18px;
+}
+
+.topbar-icon-button.ant-btn:hover {
+  background: #f3f6fa;
+  color: #7067ef;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 8px;
+  padding: 6px 10px 6px 20px;
+  border-left: 1px solid #edf0f5;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+
+.topbar-avatar.ant-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #e8f1ff;
+  color: #7067ef;
+  font-weight: 600;
+}
+
+.topbar-user-name {
+  max-width: 120px;
+  overflow: hidden;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    height: 64px;
+    min-height: 64px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .topbar-left {
+    gap: 10px;
+  }
+
+  .topbar-right {
+    gap: 4px;
+  }
+
+  .topbar-breadcrumb {
+    display: none;
+  }
+
+  .topbar-user {
+    gap: 0;
+    margin-left: 4px;
+    padding-left: 10px;
+  }
+
+  .topbar-user-name {
+    display: none;
+  }
+}

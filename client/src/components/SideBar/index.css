@@ -1,0 +1,172 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 248px;
+  min-width: 248px;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-right: 1px solid #edf0f5;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 76px;
+  padding: 0 22px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: #7067ef;
+  color: #ffffff;
+  font-size: 21px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(22, 119, 255, 0.18);
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sidebar-product-name {
+  color: #172033;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.sidebar-product-desc {
+  color: #98a2b3;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+
+.sidebar-section-label {
+  padding: 20px 24px 10px;
+  color: #98a2b3;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 12px;
+}
+
+/* 每一项 */
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #475467;
+  font-size: 14px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-nav-item:hover {
+  background: #f5f8fc;
+  color: #7067ef;
+}
+
+.sidebar-nav-item.selected {
+  background: #eaf3ff;
+  color: #7067ef;
+  font-weight: 500;
+}
+
+/* "全部项目" 的图标 */
+.sidebar-nav-icon {
+  font-size: 16px;
+  flex: 0 0 auto;
+}
+
+/* 文字，长了省略 */
+.sidebar-nav-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 分隔线 */
+.sidebar-nav-divider {
+  height: 1px;
+  margin: 10px 4px;
+  background: #f0f2f5;
+}
+
+/* 分组标题 */
+.sidebar-nav-group-title {
+  padding: 6px 12px;
+  color: #98a2b3;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 色点：关键就靠 flex: 0 0 auto */
+.project-color-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;          /* 想要小方块就改成 3px */
+  box-sizing: border-box;
+}
+
+.sidebar-bottom {
+  flex-shrink: 0;
+  padding: 12px 16px 16px;
+}
+
+.sidebar-bottom-divider {
+  height: 1px;
+  margin-bottom: 12px;
+  background: #edf0f5;
+}
+
+.sidebar-logout.ant-btn {
+  height: 40px;
+  justify-content: flex-start;
+  padding: 0 12px;
+  border-radius: 8px;
+}
+
+.sidebar-logout.ant-btn .anticon {
+  font-size: 16px;
+}
+
+.sidebar-version {
+  padding: 16px 8px 0;
+  color: #b0b8c5;
+  font-size: 11px;
+}
+
