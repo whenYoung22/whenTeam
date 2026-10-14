@@ -1,71 +1,41 @@
-import { useState } from "react";
-import { Empty, message } from "antd";
+// import { useState } from "react";
+import { useNavigate, useParams, Outlet } from "react-router-dom";
+
+import { message } from "antd";
 
 import SideBar from "@/components/SideBar";
 import TopBar from "@/components/TopBar";
-import ProjectGrid from "@/components/ProjectGrid";
-import ProjectOverview from "@/components/ProjectOverview";
 import Footer from "@/components/Footer";
 
-import type { ProjectOverviewData } from "@/components/ProjectOverview";
+// import ProjectGrid from "@/components/ProjectGrid";
+// import ProjectOverview from "@/components/ProjectOverview";
+
+import { mockProjects, mockUserName } from "@/service/seed";
+
 import type { ProjectGridItem } from "@/components/ProjectGrid";
 
 import "./index.css";
 
-// 临时模拟数据，后续从后端 API 获取
-const mockProjects: ProjectGridItem[] = [
-  {
-    id: 1,
-    name: "whenTeam 开发",
-    color: "#ac69ca",
-    progress: 65,
-    taskCount: 12,
-    isFavorite: true,
-  },
-  {
-    id: 2,
-    name: "学习计划",
-    color: "#539433",
-    progress: 40,
-    taskCount: 8,
-    isFavorite: false,
-  },
-  {
-    id: 3,
-    name: "课程作业",
-    color: "#d38d43",
-    progress: 85,
-    taskCount: 20,
-    isFavorite: true,
-  },
-];
-
-// 临时模拟数据，后续从后端 API 获取
-const mockOverviewData: ProjectOverviewData = {
-  projectCount: mockProjects.length,
-  weekTaskCount: 12,
-  collaborators: ["林", "周", "陈", "许"],
-  collaboratorCount: 8,
-};
-
 export default function MainPage() {
-  // 当前选中的项目；null 表示全部项目
-  const [selectedProject, setSelectedProject] =
-    useState<ProjectGridItem | null>(null);
+  const navigate = useNavigate();
+  const { projectId } = useParams();
 
-  // 当前登录用户，暂时使用模拟数据
-  const userName = "管理员";
+  // 根据 URL 确定当前选中的项目
+  const selectedProject: ProjectGridItem | null =
+    mockProjects.find((project) => String(project.id) === projectId) ?? null;
 
+  // 返回项目总览
   const handleReturnToProjects = () => {
-    setSelectedProject(null);
+    navigate("/");
   };
 
   const handleProjectListClick = () => {
-    setSelectedProject(null);
+    navigate("/");
   };
 
+  // 点击项目时进入项目详情路由
   const handleProjectClick = (project: ProjectGridItem) => {
-    setSelectedProject(project);
+    navigate(`/projects/${project.id}`);
   };
 
   const handleSearchClick = () => {
@@ -93,14 +63,14 @@ export default function MainPage() {
       <div className="main-page-body">
         <TopBar
           projectName={selectedProject?.name ?? null}
-          userName={userName}
+          userName={mockUserName}
           onReturnToProjects={handleReturnToProjects}
           onSearchClick={handleSearchClick}
           onNotificationsClick={handleNotificationsClick}
         />
 
         <main className="main-page-content">
-          {selectedProject ? (
+          {/* {selectedProject ? (
             <section className="project-detail-placeholder">
               <div className="page-heading">
                 <div>
@@ -118,7 +88,8 @@ export default function MainPage() {
                 onProjectClick={handleProjectClick}
               />
             </>
-          )}
+          )} */}
+          <Outlet />
         </main>
 
         <Footer />
