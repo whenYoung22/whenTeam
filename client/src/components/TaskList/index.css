@@ -1,0 +1,168 @@
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ===== 标题区 ===== */
+.task-list-heading {
+  margin-bottom: 4px;
+}
+
+.task-list-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.task-list-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: #f0f2f5;
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.task-list-desc {
+  margin: 6px 0 0;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
+/* ===== Tabs 微调 ===== */
+.task-list-tabs.ant-tabs {
+  margin-bottom: 8px;
+}
+
+.task-list-tabs .ant-tabs-nav {
+  margin-bottom: 0;
+}
+
+.task-list-tabs .ant-tabs-tab {
+  padding: 10px 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.task-list-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #7067ef;
+}
+
+.task-list-tabs .ant-tabs-ink-bar {
+  background: #7067ef;
+}
+
+.task-list-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: #f0f2f5;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.task-list-tabs .ant-tabs-tab-active .task-list-tab-count {
+  background: #eaf3ff;
+  color: #7067ef;
+}
+
+/* ===== 表格 ===== */
+.task-list-table.ant-table-wrapper .ant-table {
+  background: transparent;
+}
+
+.task-list-table.ant-table-wrapper .ant-table-thead > tr > th {
+  padding: 12px 16px;
+  background: #fafbfc;
+  border-bottom: 1px solid #eef0f4;
+  color: #98a2b3;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.task-list-table.ant-table-wrapper .ant-table-tbody > tr > td {
+  padding: 16px;
+  border-bottom: 1px solid #f2f4f7;
+  font-size: 14px;
+  color: #344054;
+}
+
+.task-list-table.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: #fafbff;
+}
+
+/* 任务标题 */
+.task-title {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.task-title-done {
+  color: #98a2b3;
+}
+
+/* 优先级 */
+.task-priority {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #475467;
+}
+
+.task-priority-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+}
+
+/* 负责人 */
+.task-assignee {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #344054;
+  font-size: 13px;
+}
+
+.task-assignee-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 50%;
+  background: #e8f1ff;
+  color: #7067ef;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 640px) {
+  .task-list-table.ant-table-wrapper .ant-table-thead > tr > th,
+  .task-list-table.ant-table-wrapper .ant-table-tbody > tr > td {
+    padding: 12px;
+    font-size: 13px;
+  }
+}

@@ -28,12 +28,12 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
+  /* border: #2d7ff3 2px solid; */
 }
 
 .project-card {
   position: relative;
-  overflow: hidden;
-  width: 100%;
+  /* width: 100%; */
   min-height: 220px;
   border-radius: 10px;
 
@@ -64,7 +64,6 @@
 }
 
 .project-card-name {
-  overflow: hidden;
   color: #262626;
   font-size: 16px;
   font-weight: 600;

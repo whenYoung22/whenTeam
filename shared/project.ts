@@ -3,5 +3,6 @@ export interface Project {
   name: string;
   description: string;
   createdAt: Date;
+  ddl: Date;
   color: string;
 }

@@ -5,6 +5,8 @@ import SideBar from "@/components/SideBar";
 import TopBar from "@/components/TopBar";
 import ProjectGrid from "@/components/ProjectGrid";
 import ProjectOverview from "@/components/ProjectOverview";
+import Footer from "@/components/Footer";
+
 import type { ProjectOverviewData } from "@/components/ProjectOverview";
 import type { ProjectGridItem } from "@/components/ProjectGrid";
 
@@ -15,7 +17,7 @@ const mockProjects: ProjectGridItem[] = [
   {
     id: 1,
     name: "whenTeam 开发",
-    color: "#b516ff",
+    color: "#ac69ca",
     progress: 65,
     taskCount: 12,
     isFavorite: true,
@@ -23,7 +25,7 @@ const mockProjects: ProjectGridItem[] = [
   {
     id: 2,
     name: "学习计划",
-    color: "#52c41a",
+    color: "#539433",
     progress: 40,
     taskCount: 8,
     isFavorite: false,
@@ -31,7 +33,7 @@ const mockProjects: ProjectGridItem[] = [
   {
     id: 3,
     name: "课程作业",
-    color: "#fa8c16",
+    color: "#d38d43",
     progress: 85,
     taskCount: 20,
     isFavorite: true,
@@ -118,6 +120,8 @@ export default function MainPage() {
             </>
           )}
         </main>
+
+        <Footer />
       </div>
     </div>
   );

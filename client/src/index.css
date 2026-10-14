@@ -20,9 +20,8 @@ body,
 
 body {
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei",
-    sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #f5f7fb;
@@ -49,4 +48,8 @@ textarea {
   --color-primary-hover: #5f55dc;
   --color-primary-active: #4f46c8;
   --color-primary-bg: #f0efff;
+}
+
+html {
+  scrollbar-gutter: stable;
 }

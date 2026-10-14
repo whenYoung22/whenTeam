@@ -1,0 +1,135 @@
+.project-panel {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #edf0f5;
+  border-radius: 12px;
+}
+
+.project-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.project-panel-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.project-panel-color {
+  width: 12px;
+  height: 12px;
+  margin-top: 7px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.project-panel-title-content {
+  min-width: 0;
+}
+
+.project-panel-title {
+  margin: 0;
+  color: #172033;
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.project-panel-description {
+  margin: 8px 0 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.project-panel-progress {
+  margin-top: 24px;
+}
+
+.project-panel-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #667085;
+  font-size: 13px;
+}
+
+.project-panel-progress-value {
+  color: #7067ef;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.project-panel-divider {
+  height: 1px;
+  margin: 24px 0;
+  background: #edf0f5;
+}
+
+.project-panel-info {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.project-panel-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.project-panel-info-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
+.project-panel-info-value {
+  color: #344054;
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.project-panel-members {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.project-panel-member-count {
+  color: #667085;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .project-panel-info {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-panel {
+    padding: 18px;
+  }
+
+  .project-panel-title {
+    font-size: 19px;
+  }
+
+  .project-panel-info {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 12px;
+  }
+}

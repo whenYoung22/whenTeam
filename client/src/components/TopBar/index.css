@@ -10,6 +10,9 @@
   box-sizing: border-box;
   background: #ffffff;
   border-bottom: 1px solid #edf0f5;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .topbar-left,
@@ -68,7 +71,6 @@
 }
 
 .topbar-project-name {
-  overflow: hidden;
   color: #172033;
   font-size: 16px;
   font-weight: 600;
@@ -125,7 +127,6 @@
   cursor: pointer;
 }
 
-
 .topbar-avatar.ant-avatar {
   display: flex;
   align-items: center;
@@ -138,7 +139,6 @@
 
 .topbar-user-name {
   max-width: 120px;
-  overflow: hidden;
   color: #344054;
   font-size: 13px;
   font-weight: 500;

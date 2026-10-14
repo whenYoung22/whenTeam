@@ -64,8 +64,8 @@
 .project-overview-stats {
   display: flex;
   align-items: center;
-  gap: 32px;
-  padding: 24px 32px;
+  gap: 65px;
+  padding: 25px 32px;
   background-color: #ffffff;
   border: 1px solid #eef0f4;
   border-radius: 16px;
@@ -87,15 +87,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 35px;
+  height: 35px;
   border-radius: 12px;
-  font-size: 20px;
+  font-size: 15px;
 }
 
 .project-overview-stat-icon-purple {
   background-color: #f3e8ff;
-  color: #b516ff;
+  color: #a838db;
 }
 
 .project-overview-stat-icon-orange {
@@ -106,7 +106,7 @@
 .project-overview-stat-label {
   margin-bottom: 4px;
   color: #8c8c8c;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
