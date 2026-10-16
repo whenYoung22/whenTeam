@@ -1,18 +1,14 @@
-// import { useState } from "react";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
 
 import { message } from "antd";
 
-import SideBar from "@/components/SideBar";
-import TopBar from "@/components/TopBar";
-import Footer from "@/components/Footer";
-
-// import ProjectGrid from "@/components/ProjectGrid";
-// import ProjectOverview from "@/components/ProjectOverview";
+import TopBar from "@/components/common/TopBar";
+import SideBar from "@/components/common/SideBar";
+import Footer from "@/components/common/Footer";
 
 import { mockProjects, mockUserName } from "@/service/seed";
 
-import type { ProjectGridItem } from "@/components/ProjectGrid";
+import type { ProjectGridItem } from "@/components/MainOverviewPage/ProjectGrid";
 
 import "./index.css";
 
@@ -25,9 +21,9 @@ export default function MainPage() {
     mockProjects.find((project) => String(project.id) === projectId) ?? null;
 
   // 返回项目总览
-  const handleReturnToProjects = () => {
-    navigate("/");
-  };
+  // const handleReturnToProjects = () => {
+  //   navigate("/");
+  // };
 
   const handleProjectListClick = () => {
     navigate("/");
@@ -64,31 +60,12 @@ export default function MainPage() {
         <TopBar
           projectName={selectedProject?.name ?? null}
           userName={mockUserName}
-          onReturnToProjects={handleReturnToProjects}
+          // onReturnToProjects={handleReturnToProjects}
           onSearchClick={handleSearchClick}
           onNotificationsClick={handleNotificationsClick}
         />
 
         <main className="main-page-content">
-          {/* {selectedProject ? (
-            <section className="project-detail-placeholder">
-              <div className="page-heading">
-                <div>
-                  <h1>{selectedProject.name}</h1>
-                  <p>项目工作空间</p>
-                </div>
-              </div>
-              <Empty description="项目详情页面暂未实现" />
-            </section>
-          ) : (
-            <>
-              <ProjectOverview data={mockOverviewData} />
-              <ProjectGrid
-                projects={mockProjects}
-                onProjectClick={handleProjectClick}
-              />
-            </>
-          )} */}
           <Outlet />
         </main>
 

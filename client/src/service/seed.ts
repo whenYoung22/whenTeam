@@ -1,6 +1,6 @@
-import type { ProjectGridItem } from "@/components/ProjectGrid";
-import type { ProjectPanelData, ProjectMember } from "@/components/ProjectPanel";
-import type { TaskItem } from "@/components/TaskList";
+import type { ProjectGridItem } from "@/components/MainOverviewPage/ProjectGrid";
+import type { ProjectPanelData, ProjectMember } from "@/components/ProjectDetailPage/ProjectPanel";
+// import type { TaskItem } from "@/components/ProjectDetailPage/TaskList";
 
 // 项目成员
 const members: ProjectMember[] = [
@@ -20,6 +20,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "林",
       dueDate: "2026-10-18",
       status: "done",
+      description: "完成登录页面的开发和测试",
     },
     {
       id: 102,
@@ -28,6 +29,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "周",
       dueDate: "2026-10-20",
       status: "doing",
+      description: "实现项目总览页面的功能",
     },
     {
       id: 103,
@@ -36,6 +38,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "林",
       dueDate: "2026-10-22",
       status: "doing",
+      description: "实现项目详情页面的功能",
     },
     {
       id: 104,
@@ -44,6 +47,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "陈",
       dueDate: "2026-10-24",
       status: "todo",
+      description: "设计任务列表组件",
     },
     {
       id: 105,
@@ -52,6 +56,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "周",
       dueDate: "2026-10-28",
       status: "todo",
+      description: "接入后端接口",
     },
   ],
 
@@ -63,6 +68,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "林",
       dueDate: "2026-10-16",
       status: "done",
+      description: "复习 React 基础知识",
     },
     {
       id: 202,
@@ -71,6 +77,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "林",
       dueDate: "2026-10-18",
       status: "doing",
+      description: "学习 React Router 的使用方法",
     },
     {
       id: 203,
@@ -79,6 +86,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "林",
       dueDate: "2026-10-22",
       status: "todo",
+      description: "学习 Express 基础",
     },
     {
       id: 204,
@@ -87,6 +95,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "林",
       dueDate: "2026-10-25",
       status: "todo",
+      description: "复习 TypeScript",
     },
   ],
 
@@ -98,6 +107,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "周",
       dueDate: "2026-10-17",
       status: "done",
+      description: "完成课程需求分析",
     },
     {
       id: 302,
@@ -106,6 +116,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "陈",
       dueDate: "2026-10-19",
       status: "done",
+      description: "完成系统设计",
     },
     {
       id: 303,
@@ -114,6 +125,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "林",
       dueDate: "2026-10-23",
       status: "doing",
+      description: "编写课程报告",
     },
     {
       id: 304,
@@ -122,6 +134,7 @@ export const mockTasksByProject: Record<number, TaskItem[]> = {
       assignee: "许",
       dueDate: "2026-10-27",
       status: "todo",
+      description: "准备项目演示",
     },
   ],
 };
@@ -141,7 +154,7 @@ const projectDetails: ProjectPanelData[] = [
   },
   {
     id: 2,
-    name: "学习计划",
+    name: "vue+Agent",
     description: "规划 React、TypeScript、Node.js 等技术的学习进度。",
     color: "#539433",
     progress: 40,
@@ -152,7 +165,7 @@ const projectDetails: ProjectPanelData[] = [
   },
   {
     id: 3,
-    name: "课程作业",
+    name: "RAG",
     description: "管理课程作业、报告编写和项目演示等任务。",
     color: "#d38d43",
     progress: 85,
@@ -186,3 +199,15 @@ export const mockOverviewData = {
 };
 
 export const mockUserName = "管理员";
+
+export type TaskPriority = "high" | "medium" | "low";
+export type TaskStatus = "todo" | "doing" | "done";
+export interface TaskItem {
+  id: number;
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  assignee: string;
+  dueDate: string;
+  status: TaskStatus;
+}

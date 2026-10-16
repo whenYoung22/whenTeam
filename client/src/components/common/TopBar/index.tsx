@@ -4,40 +4,52 @@ import {
   SearchOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
+import { useMatch, useNavigate } from "react-router-dom";
 
 import "./index.css";
 
 interface TopBarProps {
   projectName: string | null;
   userName: string;
-  onReturnToProjects: () => void;
   onSearchClick: () => void;
   onNotificationsClick: () => void;
+  // onReturnToProjects 删掉了：返回逻辑组件内部用 navigate 处理
 }
 
 export default function TopBar({
   projectName,
   userName,
-  onReturnToProjects,
   onSearchClick,
   onNotificationsClick,
 }: TopBarProps) {
+  const navigate = useNavigate();
+
+  // 匹配项目详情路由，命中说明当前在项目页
+  const projectMatch = useMatch("/projects/:projectId");
+  const isProjectPage = projectMatch !== null;
+
   const avatarText = userName.trim().charAt(0) || "U";
 
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <Tooltip title="返回全部项目">
+        {isProjectPage ? (
+          <button
+            type="button"
+            className="topbar-logo topbar-logo-back"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeftOutlined className="topbar-logo-icon" />
+            全部项目
+          </button>
+        ) : (
           <button
             type="button"
             className="topbar-logo"
-            onClick={onReturnToProjects}
-            aria-label="返回全部项目"
           >
-            <ArrowLeftOutlined className="topbar-logo-icon" />
             whenTeam
           </button>
-        </Tooltip>
+        )}
 
         <div className="topbar-title">
           <span className="topbar-project-name">
@@ -50,7 +62,7 @@ export default function TopBar({
       </div>
 
       <div className="topbar-right">
-        <Tooltip title="搜索项目或任务">
+        <Tooltip title="搜索">
           <Button
             type="text"
             className="topbar-icon-button"
@@ -60,22 +72,19 @@ export default function TopBar({
           />
         </Tooltip>
 
-        <Tooltip title="消息通知">
-          <Badge dot offset={[-3, 3]}>
-            <Button
-              type="text"
-              className="topbar-icon-button"
-              icon={<BellOutlined />}
-              onClick={onNotificationsClick}
-              aria-label="消息通知"
-            />
-          </Badge>
-        </Tooltip>
+        <Badge dot offset={[-3, 3]}>
+          <Button
+            type="text"
+            className="topbar-icon-button"
+            icon={<BellOutlined />}
+            onClick={onNotificationsClick}
+            aria-label="消息通知"
+          />
+        </Badge>
 
         <div className="topbar-user">
-          <Avatar className="topbar-avatar">{avatarText}</Avatar>
-
-          <span className="topbar-user-name">{userName}</span>
+          <Avatar size="small">{avatarText}</Avatar>
+          <span className="topbar-username">{userName}</span>
         </div>
       </div>
     </header>

@@ -1,40 +1,64 @@
-import { Empty } from "antd";
 import { useParams } from "react-router-dom";
+import { useState } from "react";
 
-import ProjectPanel from "@/components/ProjectPanel";
-import TaskList from "@/components/TaskList";
+import { Empty } from "antd";
 
-import {
-  mockProjectDetails,
-  mockTasksByProject,
-} from "@/service/seed";
+import ProjectPanel from "@/components/ProjectDetailPage/ProjectPanel";
+import TaskList from "@/components/ProjectDetailPage/TaskList";
+import CreateTaskModal from "@/components/ProjectDetailPage/CreateTaskModal";
+import TaskDetailModal from "@/components/ProjectDetailPage/TaskDetailModal";
 
-import "./index.css";
+import { mockProjectDetails, mockTasksByProject } from "@/service/seed";
+
+import type { TaskItem } from "@/service/seed";
+
 
 export default function ProjectDetailPage() {
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
+
   const { projectId } = useParams();
 
   // URL 参数是字符串，需要转换为数字
   const id = Number(projectId);
 
   // 查找项目详情
-  const project = mockProjectDetails.find(
-    (item) => item.id === id,
+  const project = mockProjectDetails.find((item) => item.id === id);
+
+  const [tasks, setTasks] = useState<TaskItem[]>(
+    () => mockTasksByProject[id] ?? [],
   );
 
-  // 项目不存在时显示空状态
+  // 项目不存在时显示空状态（注意：hooks 必须都在这个 return 之前）
   if (!project || !Number.isInteger(id)) {
     return <Empty description="项目不存在" />;
   }
 
-  // 获取当前项目的任务列表
-  const tasks = mockTasksByProject[id] ?? [];
+  /** 保存编辑结果：替换对应 id 的任务 */
+  const handleSaveTask = (updated: TaskItem) => {
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  };
 
   return (
     <section className="project-detail-page">
       <ProjectPanel project={project} />
 
-      <TaskList tasks={tasks} />
+      <TaskList
+        tasks={tasks}
+        onCreateTask={() => setCreateTaskOpen(true)}
+        onTaskClick={(task) => setSelectedTask(task)}
+      />
+
+      <CreateTaskModal
+        open={createTaskOpen}
+        onClose={() => setCreateTaskOpen(false)}
+      />
+
+      <TaskDetailModal
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
+        onSave={handleSaveTask}
+      />
     </section>
   );
 }

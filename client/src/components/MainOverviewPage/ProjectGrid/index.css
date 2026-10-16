@@ -1,5 +1,6 @@
 .project-grid-section {
-  width: 100%;
+  width: 99%;
+  /* border: #2d7ff3 2px solid; */
 }
 
 .project-grid-header {
@@ -26,9 +27,15 @@
 
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* grid-template-columns: repeat(2, 1fr); */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
-  /* border: #2d7ff3 2px solid; */
+  /* border: #2d7ff3 2px solid;  */
+  max-width: 1120px;
+}
+
+.project-grid-filter{
+  font-size: 12px;
 }
 
 .project-card {

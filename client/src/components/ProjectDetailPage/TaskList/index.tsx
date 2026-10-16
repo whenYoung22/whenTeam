@@ -1,23 +1,29 @@
 import { useMemo, useState } from "react";
-import { Table, Tabs, Tag } from "antd";
+import { Button, Table, Tabs, Tag } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+
 import type { TableProps } from "antd";
+
+import type { TaskItem, TaskPriority, TaskStatus } from "@/service/seed";
 
 import "./index.css";
 
-export type TaskPriority = "high" | "medium" | "low";
-export type TaskStatus = "todo" | "doing" | "done";
+// export type TaskPriority = "high" | "medium" | "low";
+// export type TaskStatus = "todo" | "doing" | "done";
 
-export interface TaskItem {
-  id: number;
-  title: string;
-  priority: TaskPriority;
-  assignee: string;
-  dueDate: string;
-  status: TaskStatus;
-}
+// export interface TaskItem {
+//   id: number;
+//   title: string;
+//   priority: TaskPriority;
+//   assignee: string;
+//   dueDate: string;
+//   status: TaskStatus;
+// }
 
 interface TaskListProps {
   tasks: TaskItem[];
+  onCreateTask?: () => void;
+  onTaskClick?: (task: TaskItem) => void;
 }
 
 /** 优先级文案与颜色 */
@@ -31,10 +37,7 @@ const PRIORITY_META: Record<
 };
 
 /** 状态文案与 Tag 颜色 */
-const STATUS_META: Record<
-  TaskStatus,
-  { label: string; color: string }
-> = {
+const STATUS_META: Record<TaskStatus, { label: string; color: string }> = {
   todo: { label: "待开始", color: "default" },
   doing: { label: "进行中", color: "processing" },
   done: { label: "已完成", color: "success" },
@@ -42,7 +45,11 @@ const STATUS_META: Record<
 
 type FilterKey = "all" | TaskStatus;
 
-export default function TaskList({ tasks }: TaskListProps) {
+export default function TaskList({
+  tasks,
+  onCreateTask,
+  onTaskClick,
+}: TaskListProps) {
   const [filter, setFilter] = useState<FilterKey>("all");
 
   /** 各状态的数量，用于 tab 的徽标 */
@@ -85,10 +92,7 @@ export default function TaskList({ tasks }: TaskListProps) {
         const meta = PRIORITY_META[priority];
         return (
           <span className="task-priority">
-            <i
-              className="task-priority-dot"
-              style={{ background: meta.dot }}
-            />
+            <i className="task-priority-dot" style={{ background: meta.dot }} />
             {meta.label}
           </span>
         );
@@ -136,6 +140,16 @@ export default function TaskList({ tasks }: TaskListProps) {
           </h2>
           <p className="task-list-desc">跟进任务状态与负责人</p>
         </div>
+
+        {/* 右侧：创建任务按钮 */}
+        <Button
+          type="primary"
+          className="task-list-create-btn"
+          icon={<PlusOutlined />}
+          onClick={onCreateTask}
+        >
+          创建任务
+        </Button>
       </div>
 
       <Tabs
@@ -188,6 +202,13 @@ export default function TaskList({ tasks }: TaskListProps) {
         columns={columns}
         dataSource={filteredTasks}
         pagination={false}
+        rowClassName={(_record, index) =>
+          index % 2 === 1 ? "table-stripe-row" : ""
+        }
+        onRow={(record) => ({
+          onClick: () => onTaskClick?.(record), // 新增
+          style: { cursor: onTaskClick ? "pointer" : undefined },
+        })}
       />
     </section>
   );

@@ -1,9 +1,5 @@
 import { Avatar, Button } from "antd";
-import {
-  AppstoreOutlined,
-  ClockCircleOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { AppstoreOutlined,ClockCircleOutlined,PlusOutlined } from "@ant-design/icons";
 
 import "./index.css";
 
@@ -21,12 +17,7 @@ interface ProjectOverviewProps {
 }
 
 const AVATAR_COLORS = [
-  "#b516ff59",
-  "#fa8c1665",
-  "#53c41a70",
-  "#1677ff70",
-  "#eb2f9680",
-  "#13c2c288",
+  "#a3a3a3",
 ];
 
 export default function ProjectOverview({data,onCreateProject,}: ProjectOverviewProps) {

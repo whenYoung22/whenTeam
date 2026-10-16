@@ -42,6 +42,7 @@ export default function ProjectGrid({
         </div>
 
         <Segmented
+          className="project-grid-filter"
           options={[
             { label: "全部项目", value: "all" },
             { label: "收藏项目", value: "favorite" },
@@ -61,14 +62,10 @@ export default function ProjectGrid({
               onClick={() => onProjectClick(project)}
             >
               <div className="project-card-icon">
-                <FolderOutlined
-                  style={{ color: project.color }}
-                />
+                <FolderOutlined style={{ color: project.color }} />
               </div>
 
-              <div className="project-card-name">
-                {project.name}
-              </div>
+              <div className="project-card-name">{project.name}</div>
 
               <div className="project-card-task-count">
                 {project.taskCount} 个任务

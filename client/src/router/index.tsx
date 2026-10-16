@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import LoginPage from "@/pages/LoginPage";
+
 import MainPage from "@/pages/MainPage";
 import MainOverviewPage from "@/pages/MainOverviewPage";
 import ProjectDetailPage from "@/pages/ProjectDetailPage";
@@ -16,10 +17,7 @@ export default function AppRouter() {
           <Route index element={<MainOverviewPage />} />
 
           {/* 项目详情 */}
-          <Route
-            path="projects/:projectId"
-            element={<ProjectDetailPage />}
-          />
+          <Route path="projects/:projectId" element={<ProjectDetailPage />}/>
         </Route>
 
         {/* 未匹配的路径暂时重定向到主页面 */}

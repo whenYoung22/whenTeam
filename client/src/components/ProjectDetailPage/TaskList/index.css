@@ -2,10 +2,17 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-top: 40px;
 }
 
 /* ===== 标题区 ===== */
+.task-list-header {
+  position: relative;
+  /* border: #1f2937 1px solid; */
+}
+
 .task-list-heading {
+  padding: 0 5px;
   margin-bottom: 4px;
 }
 
@@ -15,7 +22,7 @@
   gap: 8px;
   margin: 0;
   color: #1f2937;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -38,10 +45,19 @@
   margin: 6px 0 0;
   color: #98a2b3;
   font-size: 13px;
+  /* border: #1f2937 1px solid; */
+}
+
+.task-list-create-btn {
+  position: absolute;
+  right: 24px;
+  top: 15px;
+  flex-shrink: 0;
 }
 
 /* ===== Tabs 微调 ===== */
 .task-list-tabs.ant-tabs {
+  padding: 0 5px;
   margin-bottom: 8px;
 }
 
@@ -50,7 +66,7 @@
 }
 
 .task-list-tabs .ant-tabs-tab {
-  padding: 10px 0;
+  padding: 10px 5px;
   font-size: 13px;
   color: #6b7280;
 }
@@ -84,10 +100,6 @@
 }
 
 /* ===== 表格 ===== */
-.task-list-table.ant-table-wrapper .ant-table {
-  background: transparent;
-}
-
 .task-list-table.ant-table-wrapper .ant-table-thead > tr > th {
   padding: 12px 16px;
   background: #fafbfc;
@@ -108,14 +120,14 @@
   background: #fafbff;
 }
 
+.task-list-table .table-stripe-row {
+  background-color: #fafafa;
+}
+
 /* 任务标题 */
 .task-title {
   color: #1f2937;
   font-weight: 500;
-}
-
-.task-title-done {
-  color: #98a2b3;
 }
 
 /* 优先级 */

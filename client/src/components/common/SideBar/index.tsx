@@ -6,7 +6,7 @@ import {
 
 import "./index.css";
 
-import type { ProjectGridItem } from "../ProjectGrid";
+import type { ProjectGridItem } from "@/components/MainOverviewPage/ProjectGrid";
 
 interface SideBarProps {
   projects: ProjectGridItem[];

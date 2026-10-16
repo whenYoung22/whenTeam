@@ -4,6 +4,7 @@
   min-height: 100vh;
   min-width: 0;
   background-color: #f5f7fa;
+  /* border:#1f2937 2px solid; */
 }
 
 .main-page-body {
@@ -11,7 +12,8 @@
   flex: 1;
   flex-direction: column;
   min-width: 0;
-  /* overflow: auto; */
+  /* border:#1f2937 2px solid; */
+  width: 100%;
   min-height: 100vh;
 }
 
