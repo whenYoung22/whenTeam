@@ -52,8 +52,8 @@ export default function TaskDetailModal({
     if (task) {
       form.setFieldsValue({
         ...task,
-        assigneeId: task.assignee?.id,
-        dueDate: task.dueDate ? dayjs(task.dueDate) : undefined,
+        assigneeId: task.assignee.id,
+        dueDate: dayjs(task.dueDate),
       });
     } else {
       form.resetFields();
@@ -64,11 +64,14 @@ export default function TaskDetailModal({
     if (!task) return;
     const values = await form.validateFields();
     const { assigneeId, ...formValues } = values;
+    const assignee = mockCollaborators.find((user) => user.id === assigneeId);
+    if (!assignee) {
+      throw new Error(`Unknown assignee id: ${assigneeId}`);
+    }
     onSave({
       ...task,
       ...formValues,
-      assignee:
-        mockCollaborators.find((user) => user.id === assigneeId) ?? null,
+      assignee,
       description: values.description ?? "",
       dueDate: values.dueDate.format("YYYY-MM-DD"),
     });

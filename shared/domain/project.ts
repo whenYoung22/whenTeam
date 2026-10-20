@@ -1,5 +1,5 @@
 import type { UserSummary } from "./user";
-import type { DateOnly, IsoDateTime } from "./date";
+import type { DateOnly, IsoDateTime } from "../common/date";
 
 export interface Project {
   id: number;
@@ -7,7 +7,7 @@ export interface Project {
   description: string;
   color: string;
   createdAt: IsoDateTime;
-  dueDate: DateOnly | null;
+  dueDate: DateOnly;
 }
 
 export interface ProjectListItem extends Pick<Project, "id" | "name" | "color"> {
@@ -26,14 +26,14 @@ export interface ProjectDetailResponse extends Project {
 export interface CreateProjectRequest {
   name: string;
   description?: string;
-  dueDate?: DateOnly;
+  dueDate: DateOnly;
   memberIds?: number[];
 }
 
 export interface UpdateProjectRequest {
   name?: string;
   description?: string;
-  dueDate?: DateOnly | null;
+  dueDate?: DateOnly;
   memberIds?: number[];
 }
 

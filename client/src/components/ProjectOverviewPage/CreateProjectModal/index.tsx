@@ -7,7 +7,7 @@ import { mockCollaborators } from "@/service/seed";
 interface ProjectFormValues {
   name: string;
   description?: string;
-  dueDate?: Dayjs;
+  dueDate: Dayjs;
   memberIds: number[];
 }
 
@@ -32,7 +32,7 @@ export default function CreateProjectModal({
     const values = await form.validateFields();
     const request: CreateProjectRequest = {
       ...values,
-      dueDate: values.dueDate?.format("YYYY-MM-DD"),
+      dueDate: values.dueDate.format("YYYY-MM-DD"),
     };
     console.log("创建项目：", request);
     onClose();
@@ -87,9 +87,13 @@ export default function CreateProjectModal({
           />
         </Form.Item>
 
-        <Form.Item name="dueDate" label="截止日期">
+        <Form.Item
+          name="dueDate"
+          label="截止日期"
+          rules={[{ required: true, message: "请选择截止日期" }]}
+        >
           <DatePicker
-            placeholder="请选择截止日期（选填）"
+            placeholder="请选择截止日期"
             style={{ width: "100%" }}
           />
         </Form.Item>

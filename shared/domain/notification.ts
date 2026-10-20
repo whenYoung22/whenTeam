@@ -1,4 +1,4 @@
-import type { IsoDateTime } from "./date";
+import type { IsoDateTime } from "../common/date";
 
 export interface Notification {
   id: number;

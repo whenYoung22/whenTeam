@@ -106,9 +106,12 @@ whenTeam/
 - `Project` 表示项目基础数据；项目 `color` 由服务端生成，创建请求不传颜色。
 - `ProjectListItem`、`ProjectDetailResponse`、`ProjectOverviewResponse` 是查询响应。进度、任务数、收藏状态和总览统计是查询/用户上下文数据，不是项目表字段。
 - 创建项目使用 `CreateProjectRequest`，成员通过 `memberIds` 传数字 ID；响应中的成员是用户摘要。
+- 项目截止日期必填，创建和更新时都不能传 `null`。
 - `Task` 表示任务基础数据，负责人关联使用 `assigneeId`；`TaskResponse` 面向前端并包含 `assignee` 用户摘要。
 - 创建、更新任务分别使用 `CreateTaskRequest`、`UpdateTaskRequest`。创建任务所属项目由项目路由确定，不在请求体重复传 `projectId`。
+- 任务截止日期和负责人必填；更新时可以省略对应字段表示不修改，但不能传 `null` 清空。
 - 创建任务时状态由服务端默认设为 `TODO`；客户端通过更新请求修改状态。
+- 收藏建议使用独立的用户-项目多对多关联表（例如 `ProjectFavorite`），以 `(userId, projectId)` 唯一约束避免重复收藏；`isFavorite` 由服务端针对当前用户查询并放入响应，不是项目表字段。
 - `UserRecord` 是后端内部类型，密码只以 `passwordHash` 保存，不能作为 API 响应返回。
 
 接口可以按以下资源组织；具体路由实现时以这些共享请求/响应类型为准：
@@ -150,6 +153,16 @@ dueDate
 ```
 
 项目成员关系单独关联用户；`progress`、`taskCount`、`isFavorite` 属于 API 查询结果，不是项目表字段。
+
+### ProjectFavorite
+
+```text
+userId
+projectId
+createdAt
+```
+
+`(userId, projectId)` 应设为联合唯一键。收藏关系与项目成员关系是两种不同关系：收藏表示某个用户的个人偏好，不自动意味着该用户是项目成员。
 
 ### Task
 

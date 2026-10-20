@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { Empty } from "antd";
 
-import ProjectPanel from "@/components/ProjectDetailPage/ProjectPanel";
+import DetailPanel from "@/components/ProjectDetailPage/DetailPanel";
 import TaskList from "@/components/ProjectDetailPage/TaskList";
 import CreateTaskModal from "@/components/ProjectDetailPage/CreateTaskModal";
 import TaskDetailModal from "@/components/ProjectDetailPage/TaskDetailModal";
@@ -41,7 +41,7 @@ export default function ProjectDetailPage() {
 
   return (
     <section className="project-detail-page">
-      <ProjectPanel project={project} />
+      <DetailPanel project={project} />
 
       <TaskList
         tasks={tasks}

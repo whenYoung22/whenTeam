@@ -8,11 +8,11 @@ import {
 import type { ProjectDetailResponse } from "@shared/index";
 import "./index.css";
 
-interface ProjectPanelProps {
+interface DetailPanelProps {
   project: ProjectDetailResponse;
 }
 
-export default function ProjectPanel({ project }: ProjectPanelProps) {
+export default function DetailPanel({ project }: DetailPanelProps) {
   return (
     <section className="project-panel">
       <div className="project-panel-header">
@@ -105,7 +105,7 @@ export default function ProjectPanel({ project }: ProjectPanelProps) {
             <span>截止日期</span>
           </div>
           <span className="project-panel-info-value">
-            {project.dueDate || "未设置"}
+            {project.dueDate}
           </span>
         </div>
       </div>

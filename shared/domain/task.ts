@@ -1,4 +1,4 @@
-import type { DateOnly, IsoDateTime } from "./date";
+import type { DateOnly, IsoDateTime } from "../common/date";
 import type { UserSummary } from "./user";
 
 export type TaskStatus = "TODO" | "DOING" | "DONE";
@@ -12,14 +12,14 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   projectId: number;
-  assigneeId: number | null;
-  dueDate: DateOnly | null;
+  assigneeId: number;
+  dueDate: DateOnly;
   createdAt: IsoDateTime;
   updatedAt: IsoDateTime;
 }
 
 export interface TaskResponse extends Omit<Task, "assigneeId"> {
-  assignee: UserSummary | null;
+  assignee: UserSummary;
 }
 
 export interface CreateTaskRequest {
@@ -35,6 +35,6 @@ export interface UpdateTaskRequest {
   description?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
-  assigneeId?: number | null;
-  dueDate?: DateOnly | null;
+  assigneeId?: number;
+  dueDate?: DateOnly;
 }

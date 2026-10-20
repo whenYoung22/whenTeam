@@ -94,9 +94,9 @@ export default function TaskList({
       render: (assignee: TaskResponse["assignee"]) => (
         <span className="task-assignee">
           <span className="task-assignee-avatar">
-            {assignee?.name.trim().charAt(0) || "?"}
+            {assignee.name.trim().charAt(0) || "?"}
           </span>
-          {assignee?.name ?? "未分配"}
+          {assignee.name}
         </span>
       ),
     },
@@ -105,7 +105,7 @@ export default function TaskList({
       dataIndex: "dueDate",
       key: "dueDate",
       width: 140,
-      render: (dueDate: string | null) => dueDate ?? "未设置",
+      render: (dueDate: string) => dueDate,
     },
     {
       title: "状态",

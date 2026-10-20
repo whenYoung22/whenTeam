@@ -1,11 +1,13 @@
-export type { DateOnly, IsoDateTime } from "./date";
+export type { DateOnly, IsoDateTime } from "./common/date";
+
+export type { ApiSuccessResponse, ApiErrorResponse } from "./common/api";
 
 export type {
   User,
   UserSummary,
   LoginRequest,
   LoginResponse,
-} from "./user";
+} from "./domain/user";
 
 export type {
   Project,
@@ -14,7 +16,7 @@ export type {
   CreateProjectRequest,
   UpdateProjectRequest,
   ProjectOverviewResponse,
-} from "./project";
+} from "./domain/project";
 
 export type {
   Task,
@@ -23,8 +25,6 @@ export type {
   UpdateTaskRequest,
   TaskStatus,
   TaskPriority,
-} from "./task";
+} from "./domain/task";
 
-export type { Notification } from "./notification";
-
-export type { ApiSuccessResponse, ApiErrorResponse } from "./api";
+export type { Notification } from "./domain/notification";
