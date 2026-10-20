@@ -1,16 +1,10 @@
-import express from "express";
-import cors from "cors";
+// app.ts：定义应用如何处理请求。
+// server.ts：决定服务什么时候、在哪个端口启动。
 
-const app = express();
+import app from "./app.js";
 
-app.use(cors());
-app.use(express.json());
+const PORT = Number(process.env.PORT) || 3000;
 
-app.get("/api/health", (_req, res) => {
-  res.json({ message: "whenTeam API is running" });
-  console.log("已返回消息");
-});
-
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });

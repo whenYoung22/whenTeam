@@ -4,26 +4,14 @@ import { PlusOutlined } from "@ant-design/icons";
 
 import type { TableProps } from "antd";
 
-import type { TaskItem, TaskPriority, TaskStatus } from "@/service/seed";
+import type { TaskPriority, TaskResponse, TaskStatus } from "@shared/index";
 
 import "./index.css";
 
-// export type TaskPriority = "high" | "medium" | "low";
-// export type TaskStatus = "todo" | "doing" | "done";
-
-// export interface TaskItem {
-//   id: number;
-//   title: string;
-//   priority: TaskPriority;
-//   assignee: string;
-//   dueDate: string;
-//   status: TaskStatus;
-// }
-
 interface TaskListProps {
-  tasks: TaskItem[];
+  tasks: TaskResponse[];
   onCreateTask?: () => void;
-  onTaskClick?: (task: TaskItem) => void;
+  onTaskClick?: (task: TaskResponse) => void;
 }
 
 /** 优先级文案与颜色 */
@@ -31,16 +19,16 @@ const PRIORITY_META: Record<
   TaskPriority,
   { label: string; color: string; dot: string }
 > = {
-  high: { label: "高", color: "#ff4d4f", dot: "#ff4d4f" },
-  medium: { label: "中", color: "#faad14", dot: "#faad14" },
-  low: { label: "低", color: "#52c41a", dot: "#52c41a" },
+  HIGH: { label: "高", color: "#ff4d4f", dot: "#ff4d4f" },
+  MEDIUM: { label: "中", color: "#faad14", dot: "#faad14" },
+  LOW: { label: "低", color: "#52c41a", dot: "#52c41a" },
 };
 
 /** 状态文案与 Tag 颜色 */
 const STATUS_META: Record<TaskStatus, { label: string; color: string }> = {
-  todo: { label: "待开始", color: "default" },
-  doing: { label: "进行中", color: "processing" },
-  done: { label: "已完成", color: "success" },
+  TODO: { label: "待开始", color: "default" },
+  DOING: { label: "进行中", color: "processing" },
+  DONE: { label: "已完成", color: "success" },
 };
 
 type FilterKey = "all" | TaskStatus;
@@ -56,9 +44,9 @@ export default function TaskList({
   const counts = useMemo(() => {
     return {
       all: tasks.length,
-      todo: tasks.filter((t) => t.status === "todo").length,
-      doing: tasks.filter((t) => t.status === "doing").length,
-      done: tasks.filter((t) => t.status === "done").length,
+      todo: tasks.filter((t) => t.status === "TODO").length,
+      doing: tasks.filter((t) => t.status === "DOING").length,
+      done: tasks.filter((t) => t.status === "DONE").length,
     };
   }, [tasks]);
 
@@ -68,14 +56,14 @@ export default function TaskList({
     return tasks.filter((t) => t.status === filter);
   }, [tasks, filter]);
 
-  const columns: TableProps<TaskItem>["columns"] = [
+  const columns: TableProps<TaskResponse>["columns"] = [
     {
       title: "任务",
       dataIndex: "title",
       key: "title",
       render: (title: string, record) => {
         // 完成的任务标题加删除线？截图里没有，保持原样，用状态图标区分
-        const isDone = record.status === "done";
+        const isDone = record.status === "DONE";
         return (
           <span className={`task-title${isDone ? " task-title-done" : ""}`}>
             {title}
@@ -103,12 +91,12 @@ export default function TaskList({
       dataIndex: "assignee",
       key: "assignee",
       width: 140,
-      render: (assignee: string) => (
+      render: (assignee: TaskResponse["assignee"]) => (
         <span className="task-assignee">
           <span className="task-assignee-avatar">
-            {assignee.trim().charAt(0) || "?"}
+            {assignee?.name.trim().charAt(0) || "?"}
           </span>
-          {assignee}
+          {assignee?.name ?? "未分配"}
         </span>
       ),
     },
@@ -117,6 +105,7 @@ export default function TaskList({
       dataIndex: "dueDate",
       key: "dueDate",
       width: 140,
+      render: (dueDate: string | null) => dueDate ?? "未设置",
     },
     {
       title: "状态",
@@ -167,7 +156,7 @@ export default function TaskList({
             ),
           },
           {
-            key: "todo",
+            key: "TODO",
             label: (
               <span>
                 待开始
@@ -176,7 +165,7 @@ export default function TaskList({
             ),
           },
           {
-            key: "doing",
+            key: "DOING",
             label: (
               <span>
                 进行中
@@ -185,7 +174,7 @@ export default function TaskList({
             ),
           },
           {
-            key: "done",
+            key: "DONE",
             label: (
               <span>
                 已完成
@@ -196,7 +185,7 @@ export default function TaskList({
         ]}
       />
 
-      <Table<TaskItem>
+      <Table<TaskResponse>
         className="task-list-table"
         rowKey="id"
         columns={columns}

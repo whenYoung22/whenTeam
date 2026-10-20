@@ -1,3 +1,5 @@
+import type { IsoDateTime } from "./date";
+
 export interface Notification {
   id: number;
   creatorId: number;
@@ -6,5 +8,5 @@ export interface Notification {
   content: string;
   projectId: number;
   isRead: boolean;
-  createdAt: Date;
+  createdAt: IsoDateTime;
 }

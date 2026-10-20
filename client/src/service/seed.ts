@@ -1,146 +1,69 @@
-import type { ProjectGridItem } from "@/components/MainOverviewPage/ProjectGrid";
-import type { ProjectPanelData, ProjectMember } from "@/components/ProjectDetailPage/ProjectPanel";
-// import type { TaskItem } from "@/components/ProjectDetailPage/TaskList";
+import type {
+  ProjectDetailResponse,
+  ProjectListItem,
+  ProjectOverviewResponse,
+  TaskPriority,
+  TaskResponse,
+  TaskStatus,
+  User,
+  UserSummary,
+} from "@shared/index";
 
-// 项目成员
-const members: ProjectMember[] = [
-  { id: 1, name: "林" },
-  { id: 2, name: "周" },
-  { id: 3, name: "陈" },
-  { id: 4, name: "许" },
+export const mockCollaborators: UserSummary[] = [
+  { id: 1, name: "张宇" },
+  { id: 2, name: "吴日天" },
+  { id: 3, name: "刘博" },
+  { id: 4, name: "李哥" },
 ];
 
-// 按项目 ID 保存任务数据
-export const mockTasksByProject: Record<number, TaskItem[]> = {
+export const mockCurrentUser: User = { id: 5, name: "闻一昂" };
+
+const createdAt = "2026-10-01T00:00:00.000Z";
+
+const makeTask = (
+  id: number,
+  title: string,
+  description: string,
+  priority: TaskPriority,
+  assignee: UserSummary,
+  dueDate: string,
+  status: TaskStatus,
+): TaskResponse => ({
+  id,
+  title,
+  description,
+  priority,
+  assignee,
+  dueDate,
+  status,
+  projectId: Math.floor(id / 100),
+  createdAt,
+  updatedAt: createdAt,
+});
+
+export const mockTasksByProject: Record<number, TaskResponse[]> = {
   1: [
-    {
-      id: 101,
-      title: "完成登录页面",
-      priority: "high",
-      assignee: "林",
-      dueDate: "2026-10-18",
-      status: "done",
-      description: "完成登录页面的开发和测试",
-    },
-    {
-      id: 102,
-      title: "实现项目总览页面",
-      priority: "high",
-      assignee: "周",
-      dueDate: "2026-10-20",
-      status: "doing",
-      description: "实现项目总览页面的功能",
-    },
-    {
-      id: 103,
-      title: "实现项目详情页面",
-      priority: "high",
-      assignee: "林",
-      dueDate: "2026-10-22",
-      status: "doing",
-      description: "实现项目详情页面的功能",
-    },
-    {
-      id: 104,
-      title: "设计任务列表组件",
-      priority: "medium",
-      assignee: "陈",
-      dueDate: "2026-10-24",
-      status: "todo",
-      description: "设计任务列表组件",
-    },
-    {
-      id: 105,
-      title: "接入后端接口",
-      priority: "medium",
-      assignee: "周",
-      dueDate: "2026-10-28",
-      status: "todo",
-      description: "接入后端接口",
-    },
+    makeTask(101, "完成登录页面", "完成登录页面的开发和测试", "HIGH", mockCollaborators[0], "2026-10-18", "DONE"),
+    makeTask(102, "实现项目总览页面", "实现项目总览页面的功能", "HIGH", mockCollaborators[1], "2026-10-20", "DOING"),
+    makeTask(103, "实现项目详情页面", "实现项目详情页面的功能", "HIGH", mockCollaborators[2], "2026-10-22", "DOING"),
+    makeTask(104, "设计任务列表组件", "设计任务列表组件", "MEDIUM", mockCollaborators[3], "2026-10-24", "TODO"),
+    makeTask(105, "接入后端接口", "接入后端接口", "MEDIUM", mockCollaborators[1], "2026-10-28", "TODO"),
   ],
-
   2: [
-    {
-      id: 201,
-      title: "复习 React 基础",
-      priority: "high",
-      assignee: "林",
-      dueDate: "2026-10-16",
-      status: "done",
-      description: "复习 React 基础知识",
-    },
-    {
-      id: 202,
-      title: "学习 React Router",
-      priority: "high",
-      assignee: "林",
-      dueDate: "2026-10-18",
-      status: "doing",
-      description: "学习 React Router 的使用方法",
-    },
-    {
-      id: 203,
-      title: "学习 Express 基础",
-      priority: "medium",
-      assignee: "林",
-      dueDate: "2026-10-22",
-      status: "todo",
-      description: "学习 Express 基础",
-    },
-    {
-      id: 204,
-      title: "复习 TypeScript",
-      priority: "low",
-      assignee: "林",
-      dueDate: "2026-10-25",
-      status: "todo",
-      description: "复习 TypeScript",
-    },
+    makeTask(201, "复习 React 基础", "复习 React 基础知识", "HIGH", mockCollaborators[0], "2026-10-16", "DONE"),
+    makeTask(202, "学习 React Router", "学习 React Router 的使用方法", "HIGH", mockCollaborators[1], "2026-10-18", "DOING"),
+    makeTask(203, "学习 Express 基础", "学习 Express 基础", "MEDIUM", mockCollaborators[3], "2026-10-22", "TODO"),
+    makeTask(204, "复习 TypeScript", "复习 TypeScript", "LOW", mockCollaborators[2], "2026-10-25", "TODO"),
   ],
-
   3: [
-    {
-      id: 301,
-      title: "完成课程需求分析",
-      priority: "high",
-      assignee: "周",
-      dueDate: "2026-10-17",
-      status: "done",
-      description: "完成课程需求分析",
-    },
-    {
-      id: 302,
-      title: "完成系统设计",
-      priority: "high",
-      assignee: "陈",
-      dueDate: "2026-10-19",
-      status: "done",
-      description: "完成系统设计",
-    },
-    {
-      id: 303,
-      title: "编写课程报告",
-      priority: "medium",
-      assignee: "林",
-      dueDate: "2026-10-23",
-      status: "doing",
-      description: "编写课程报告",
-    },
-    {
-      id: 304,
-      title: "准备项目演示",
-      priority: "low",
-      assignee: "许",
-      dueDate: "2026-10-27",
-      status: "todo",
-      description: "准备项目演示",
-    },
+    makeTask(301, "完成课程需求分析", "完成课程需求分析", "HIGH", mockCollaborators[1], "2026-10-17", "DONE"),
+    makeTask(302, "完成系统设计", "完成系统设计", "HIGH", mockCollaborators[2], "2026-10-19", "DONE"),
+    makeTask(303, "编写课程报告", "编写课程报告", "MEDIUM", mockCollaborators[3], "2026-10-23", "DOING"),
+    makeTask(304, "准备项目演示", "准备项目演示", "LOW", mockCollaborators[0], "2026-10-27", "TODO"),
   ],
 };
 
-// 项目详情数据
-const projectDetails: ProjectPanelData[] = [
+export const mockProjectDetails: ProjectDetailResponse[] = [
   {
     id: 1,
     name: "whenTeam 开发",
@@ -148,9 +71,10 @@ const projectDetails: ProjectPanelData[] = [
     color: "#9c55bd",
     progress: 65,
     taskCount: mockTasksByProject[1].length,
-    members,
-    createdAt: "2026-09-20",
+    members: mockCollaborators,
+    createdAt: "2026-09-20T00:00:00.000Z",
     dueDate: "2026-11-30",
+    isFavorite: true,
   },
   {
     id: 2,
@@ -159,9 +83,10 @@ const projectDetails: ProjectPanelData[] = [
     color: "#539433",
     progress: 40,
     taskCount: mockTasksByProject[2].length,
-    members: [members[0]],
-    createdAt: "2026-09-25",
+    members: mockCollaborators,
+    createdAt: "2026-09-25T00:00:00.000Z",
     dueDate: "2026-12-31",
+    isFavorite: false,
   },
   {
     id: 3,
@@ -170,44 +95,30 @@ const projectDetails: ProjectPanelData[] = [
     color: "#d38d43",
     progress: 85,
     taskCount: mockTasksByProject[3].length,
-    members,
-    createdAt: "2026-09-15",
+    members: mockCollaborators,
+    createdAt: "2026-09-15T00:00:00.000Z",
     dueDate: "2026-10-30",
+    isFavorite: true,
   },
 ];
 
-// 项目详情页使用的完整项目数据
-export const mockProjectDetails = projectDetails;
-
-// 项目列表和侧边栏使用精简数据
-export const mockProjects: ProjectGridItem[] = projectDetails.map(
-  ({ id, name, color, progress, taskCount }) => ({
+export const mockProjects: ProjectListItem[] = mockProjectDetails.map(
+  ({ id, name, description, color, createdAt, dueDate, progress, taskCount, isFavorite }) => ({
     id,
     name,
+    description,
     color,
+    createdAt,
+    dueDate,
     progress,
     taskCount,
-    isFavorite: id !== 2,
+    isFavorite,
   }),
 );
 
-export const mockOverviewData = {
+export const mockOverviewData: ProjectOverviewResponse = {
   projectCount: mockProjects.length,
   weekTaskCount: 12,
-  collaborators: ["林", "周", "陈", "许"],
+  collaborators: mockCollaborators,
   collaboratorCount: 8,
 };
-
-export const mockUserName = "管理员";
-
-export type TaskPriority = "high" | "medium" | "low";
-export type TaskStatus = "todo" | "doing" | "done";
-export interface TaskItem {
-  id: number;
-  title: string;
-  description: string;
-  priority: TaskPriority;
-  assignee: string;
-  dueDate: string;
-  status: TaskStatus;
-}

@@ -6,9 +6,9 @@ import TopBar from "@/components/common/TopBar";
 import SideBar from "@/components/common/SideBar";
 import Footer from "@/components/common/Footer";
 
-import { mockProjects, mockUserName } from "@/service/seed";
+import { mockCurrentUser, mockProjects } from "@/service/seed";
 
-import type { ProjectGridItem } from "@/components/MainOverviewPage/ProjectGrid";
+import type { ProjectListItem } from "@shared/index";
 
 import "./index.css";
 
@@ -17,7 +17,7 @@ export default function MainPage() {
   const { projectId } = useParams();
 
   // 根据 URL 确定当前选中的项目
-  const selectedProject: ProjectGridItem | null =
+  const selectedProject: ProjectListItem | null =
     mockProjects.find((project) => String(project.id) === projectId) ?? null;
 
   // 返回项目总览
@@ -30,7 +30,7 @@ export default function MainPage() {
   };
 
   // 点击项目时进入项目详情路由
-  const handleProjectClick = (project: ProjectGridItem) => {
+  const handleProjectClick = (project: ProjectListItem) => {
     navigate(`/projects/${project.id}`);
   };
 
@@ -59,7 +59,7 @@ export default function MainPage() {
       <div className="main-page-body">
         <TopBar
           projectName={selectedProject?.name ?? null}
-          userName={mockUserName}
+          userName={mockCurrentUser.name}
           // onReturnToProjects={handleReturnToProjects}
           onSearchClick={handleSearchClick}
           onNotificationsClick={handleNotificationsClick}

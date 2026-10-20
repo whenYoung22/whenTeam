@@ -5,28 +5,11 @@ import {
   ClockCircleOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
+import type { ProjectDetailResponse } from "@shared/index";
 import "./index.css";
 
-export interface ProjectMember {
-  id: number;
-  name: string;
-  avatar?: string;
-}
-
-export interface ProjectPanelData {
-  id: number;
-  name: string;
-  description: string;
-  color: string;
-  progress: number;
-  taskCount: number;
-  members: ProjectMember[];
-  createdAt: string;
-  dueDate: string;
-}
-
 interface ProjectPanelProps {
-  project: ProjectPanelData;
+  project: ProjectDetailResponse;
 }
 
 export default function ProjectPanel({ project }: ProjectPanelProps) {
@@ -59,7 +42,7 @@ export default function ProjectPanel({ project }: ProjectPanelProps) {
         <Progress
           percent={project.progress}
           showInfo={false}
-          strokeColor="#7067ef"
+          strokeColor={project.color}
           size={{ height: 8 }}
         />
       </div>
@@ -88,9 +71,9 @@ export default function ProjectPanel({ project }: ProjectPanelProps) {
               {project.members.map((member) => (
                 <Tooltip key={member.id} title={member.name}>
                   <Avatar
-                    src={member.avatar}
+                    src={member.avatarUrl}
                     style={{
-                      backgroundColor: "#7067ef",
+                      backgroundColor: "#b4b9c7",
                       fontSize: 12,
                     }}
                   >
@@ -111,7 +94,9 @@ export default function ProjectPanel({ project }: ProjectPanelProps) {
             <CalendarOutlined />
             <span>创建日期</span>
           </div>
-          <span className="project-panel-info-value">{project.createdAt}</span>
+          <span className="project-panel-info-value">
+            {project.createdAt.slice(0, 10)}
+          </span>
         </div>
 
         <div className="project-panel-info-item">

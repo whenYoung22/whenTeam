@@ -1,12 +1,15 @@
 import { DatePicker, Form, Input, Modal, Select } from "antd";
 import type { Dayjs } from "dayjs";
-import type { TaskPriority } from "@/service/seed";
+import type { CreateTaskRequest, TaskPriority } from "@shared/index";
+
+import { mockCollaborators } from "@/service/seed";
+
 
 interface TaskFormValues {
   title: string;
   description?: string;
   priority: TaskPriority;
-  assignee: string;
+  assigneeId: number;
   dueDate: Dayjs;
 }
 
@@ -16,17 +19,15 @@ interface CreateTaskModalProps {
 }
 
 /** 负责人选项：占位数据，后续换成接口返回的成员列表 */
-const ASSIGNEE_OPTIONS = [
-  { value: "张伟", label: "张伟" },
-  { value: "吴昊", label: "吴昊" },
-  { value: "王强", label: "王强" },
-  { value: "赵敏", label: "赵敏" },
-];
+const ASSIGNEE_OPTIONS = mockCollaborators.map((user) => ({
+  label: user.name,
+  value: user.id,
+}));
 
 const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
-  { value: "high", label: "高" },
-  { value: "medium", label: "中" },
-  { value: "low", label: "低" },
+  { value: "HIGH", label: "高" },
+  { value: "MEDIUM", label: "中" },
+  { value: "LOW", label: "低" },
 ];
 
 export default function CreateTaskModal({
@@ -38,7 +39,11 @@ export default function CreateTaskModal({
   const handleSubmit = async () => {
     // TODO: 后续接 service，成功后通知页面刷新列表
     const values = await form.validateFields();
-    console.log("创建任务：", values);
+    const request: CreateTaskRequest = {
+      ...values,
+      dueDate: values.dueDate.format("YYYY-MM-DD"),
+    };
+    console.log("创建任务：", request);
     onClose();
   };
 
@@ -63,7 +68,7 @@ export default function CreateTaskModal({
         form={form}
         layout="vertical"
         requiredMark={false}
-        initialValues={{ priority: "medium" }}
+        initialValues={{ priority: "MEDIUM" }}
       >
         <Form.Item
           name="title"
@@ -92,7 +97,7 @@ export default function CreateTaskModal({
         </Form.Item>
 
         <Form.Item
-          name="assignee"
+          name="assigneeId"
           label="负责人"
           rules={[{ required: true, message: "请选择负责人" }]}
         >

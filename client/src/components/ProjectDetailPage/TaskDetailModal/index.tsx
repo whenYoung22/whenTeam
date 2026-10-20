@@ -2,44 +2,43 @@ import { useEffect } from "react";
 import { DatePicker, Form, Input, Modal, Select } from "antd";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import type { TaskPriority, TaskResponse, TaskStatus } from "@shared/index";
 
-import type { TaskItem, TaskPriority, TaskStatus } from "@/service/seed";
+import { mockCollaborators } from "@/service/seed";
 
 interface TaskFormValues {
   title: string;
   description?: string;
   priority: TaskPriority;
-  assignee: string;
+  assigneeId: number;
   dueDate: Dayjs;
   status: TaskStatus;
 }
 
 interface TaskDetailModalProps {
-  task: TaskItem | null;
+  task: TaskResponse | null;
   onClose: () => void;
   /** 保存编辑结果：由页面负责更新本地数据 */
-  onSave: (task: TaskItem) => void;
+  onSave: (task: TaskResponse) => void;
 }
 
 const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
-  { value: "high", label: "高" },
-  { value: "medium", label: "中" },
-  { value: "low", label: "低" },
+  { value: "HIGH", label: "高" },
+  { value: "MEDIUM", label: "中" },
+  { value: "LOW", label: "低" },
 ];
 
 const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
-  { value: "todo", label: "待开始" },
-  { value: "doing", label: "进行中" },
-  { value: "done", label: "已完成" },
+  { value: "TODO", label: "待开始" },
+  { value: "DOING", label: "进行中" },
+  { value: "DONE", label: "已完成" },
 ];
 
 /** 负责人选项：占位数据，后续换成接口返回的成员列表 */
-const ASSIGNEE_OPTIONS = [
-  { value: "张伟", label: "张伟" },
-  { value: "吴昊", label: "吴昊" },
-  { value: "王强", label: "王强" },
-  { value: "赵敏", label: "赵敏" },
-];
+const ASSIGNEE_OPTIONS = mockCollaborators.map((user) => ({
+  label: user.name,
+  value: user.id,
+}));
 
 export default function TaskDetailModal({
   task,
@@ -53,7 +52,8 @@ export default function TaskDetailModal({
     if (task) {
       form.setFieldsValue({
         ...task,
-        dueDate: dayjs(task.dueDate), // 字符串转 Dayjs，DatePicker 才能识别
+        assigneeId: task.assignee?.id,
+        dueDate: task.dueDate ? dayjs(task.dueDate) : undefined,
       });
     } else {
       form.resetFields();
@@ -63,10 +63,12 @@ export default function TaskDetailModal({
   const handleSave = async () => {
     if (!task) return;
     const values = await form.validateFields();
-    // 组装回 TaskItem：Dayjs 转回字符串
+    const { assigneeId, ...formValues } = values;
     onSave({
       ...task,
-      ...values,
+      ...formValues,
+      assignee:
+        mockCollaborators.find((user) => user.id === assigneeId) ?? null,
       description: values.description ?? "",
       dueDate: values.dueDate.format("YYYY-MM-DD"),
     });
@@ -119,7 +121,7 @@ export default function TaskDetailModal({
         </Form.Item>
 
         <Form.Item
-          name="assignee"
+          name="assigneeId"
           label="负责人"
           rules={[{ required: true, message: "请选择负责人" }]}
         >

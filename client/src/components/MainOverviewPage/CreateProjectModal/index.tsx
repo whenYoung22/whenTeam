@@ -1,12 +1,14 @@
 import { DatePicker, Form, Input, Modal, Select } from "antd";
 import type { Dayjs } from "dayjs";
+import type { CreateProjectRequest } from "@shared/index";
+
+import { mockCollaborators } from "@/service/seed";
 
 interface ProjectFormValues {
   name: string;
   description?: string;
-  color: string;
   dueDate?: Dayjs;
-  members: string[];
+  memberIds: number[];
 }
 
 interface CreateProjectModalProps {
@@ -14,12 +16,10 @@ interface CreateProjectModalProps {
   onClose: () => void;
 }
 
-const MEMBER_OPTIONS = [
-  { value: "张伟", label: "张伟" },
-  { value: "吴昊", label: "吴昊" },
-  { value: "王强", label: "王强" },
-  { value: "赵敏", label: "赵敏" },
-];
+const MEMBER_OPTIONS = mockCollaborators.map((user) => ({
+  label: user.name,
+  value: user.id,
+}));
 
 export default function CreateProjectModal({
   open,
@@ -30,10 +30,11 @@ export default function CreateProjectModal({
   const handleSubmit = async () => {
     // TODO: 后续接 service，成功后通知页面刷新列表
     const values = await form.validateFields();
-    console.log("创建项目：", {
+    const request: CreateProjectRequest = {
       ...values,
       dueDate: values.dueDate?.format("YYYY-MM-DD"),
-    });
+    };
+    console.log("创建项目：", request);
     onClose();
   };
 
@@ -77,7 +78,7 @@ export default function CreateProjectModal({
           />
         </Form.Item>
 
-        <Form.Item name="members" label="项目成员">
+        <Form.Item name="memberIds" label="项目成员">
           <Select
             mode="multiple"
             placeholder="请选择项目成员（选填）"

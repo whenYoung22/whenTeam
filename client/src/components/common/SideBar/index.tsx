@@ -6,13 +6,13 @@ import {
 
 import "./index.css";
 
-import type { ProjectGridItem } from "@/components/MainOverviewPage/ProjectGrid";
+import type { ProjectListItem } from "@shared/index";
 
 interface SideBarProps {
-  projects: ProjectGridItem[];
+  projects: ProjectListItem[];
   selectedProjectId: number | null;
   onProjectListClick: () => void;
-  onProjectClick: (project: ProjectGridItem) => void;
+  onProjectClick: (project: ProjectListItem) => void;
   onLogout: () => void;
 }
 

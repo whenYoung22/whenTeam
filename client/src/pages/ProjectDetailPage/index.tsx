@@ -10,12 +10,12 @@ import TaskDetailModal from "@/components/ProjectDetailPage/TaskDetailModal";
 
 import { mockProjectDetails, mockTasksByProject } from "@/service/seed";
 
-import type { TaskItem } from "@/service/seed";
+import type { TaskResponse } from "@shared/index";
 
 
 export default function ProjectDetailPage() {
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
+  const [selectedTask, setSelectedTask] = useState<TaskResponse | null>(null);
 
   const { projectId } = useParams();
 
@@ -25,7 +25,7 @@ export default function ProjectDetailPage() {
   // 查找项目详情
   const project = mockProjectDetails.find((item) => item.id === id);
 
-  const [tasks, setTasks] = useState<TaskItem[]>(
+  const [tasks, setTasks] = useState<TaskResponse[]>(
     () => mockTasksByProject[id] ?? [],
   );
 
@@ -35,7 +35,7 @@ export default function ProjectDetailPage() {
   }
 
   /** 保存编辑结果：替换对应 id 的任务 */
-  const handleSaveTask = (updated: TaskItem) => {
+  const handleSaveTask = (updated: TaskResponse) => {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
   };
 

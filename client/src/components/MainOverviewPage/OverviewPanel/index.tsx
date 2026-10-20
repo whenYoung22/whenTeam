@@ -1,26 +1,17 @@
 import { Avatar, Button } from "antd";
 import { AppstoreOutlined,ClockCircleOutlined,PlusOutlined } from "@ant-design/icons";
+import type { ProjectOverviewResponse } from "@shared/index";
 
 import "./index.css";
 
-// 总览数据，后续可直接映射后端 API 返回值
-export interface ProjectOverviewData {
-  projectCount: number;
-  weekTaskCount: number;
-  collaborators: string[]; // 协作成员姓名，用于生成头像
-  collaboratorCount: number;
-}
-
-interface ProjectOverviewProps {
-  data: ProjectOverviewData;
+interface OverviewPanelProps {
+  data: ProjectOverviewResponse;
   onCreateProject?: () => void; // 点击“新建项目”回调
 }
 
-const AVATAR_COLORS = [
-  "#a3a3a3",
-];
+const AVATAR_COLORS = ["#b4b9c7"];
 
-export default function ProjectOverview({data,onCreateProject,}: ProjectOverviewProps) {
+export default function OverviewPanel({data,onCreateProject,}: OverviewPanelProps) {
   return (
     <section className="project-overview">
       <div className="project-overview-heading">
@@ -87,9 +78,10 @@ export default function ProjectOverview({data,onCreateProject,}: ProjectOverview
             <div className="project-overview-stat-label">正在一起协作</div>
             <div className="project-overview-stat-collaborators">
               <Avatar.Group max={{ count: 5 }} size={28}>
-                {data.collaborators.map((name, index) => (
+                {data.collaborators.map((user, index) => (
                   <Avatar
-                    key={`${name}-${index}`}
+                    key={user.id}
+                    src={user.avatarUrl}
                     size={28}
                     style={{
                       backgroundColor:
@@ -97,7 +89,7 @@ export default function ProjectOverview({data,onCreateProject,}: ProjectOverview
                       fontSize: 12,
                     }}
                   >
-                    {name.trim().charAt(0)}
+                    {user.name.trim().charAt(0)}
                   </Avatar>
                 ))}
               </Avatar.Group>

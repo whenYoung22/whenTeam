@@ -1,25 +1,15 @@
 import { useState } from "react";
 import { Card, Empty, Progress, Segmented } from "antd";
 import { FolderOutlined } from "@ant-design/icons";
+import type { ProjectListItem } from "@shared/index";
 
 import "./index.css";
-
-// 项目列表需要展示的数据
-// 后续可以直接映射后端返回的数据
-export interface ProjectGridItem {
-  id: number;
-  name: string;
-  color: string;
-  progress: number;
-  taskCount: number;
-  isFavorite: boolean;
-}
 
 type ProjectFilter = "all" | "favorite";
 
 interface ProjectGridProps {
-  projects: ProjectGridItem[];
-  onProjectClick: (project: ProjectGridItem) => void;
+  projects: ProjectListItem[];
+  onProjectClick: (project: ProjectListItem) => void;
 }
 
 export default function ProjectGrid({
