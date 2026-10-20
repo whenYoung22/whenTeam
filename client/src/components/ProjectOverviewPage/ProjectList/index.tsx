@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { Card, Empty, Progress, Segmented } from "antd";
 import { FolderOutlined } from "@ant-design/icons";
+
 import type { ProjectListItem } from "@shared/index";
 
 import "./index.css";
 
 type ProjectFilter = "all" | "favorite";
 
-interface ProjectGridProps {
+interface ProjectListProps {
   projects: ProjectListItem[];
   onProjectClick: (project: ProjectListItem) => void;
 }
 
-export default function ProjectGrid({
+export default function ProjectList({
   projects,
   onProjectClick,
-}: ProjectGridProps) {
+}: ProjectListProps) {
   const [filter, setFilter] = useState<ProjectFilter>("all");
 
   const filteredProjects =

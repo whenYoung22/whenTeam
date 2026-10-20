@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "@/pages/LoginPage";
 
 import MainPage from "@/pages/MainPage";
-import MainOverviewPage from "@/pages/MainOverviewPage";
+import ProjectOverviewPage from "@/pages/ProjectOverviewPage";
 import ProjectDetailPage from "@/pages/ProjectDetailPage";
 
 export default function AppRouter() {
@@ -14,7 +14,7 @@ export default function AppRouter() {
 
         <Route path="/" element={<MainPage />}>
           {/* 项目总览 */}
-          <Route index element={<MainOverviewPage />} />
+          <Route index element={<ProjectOverviewPage />} />
 
           {/* 项目详情 */}
           <Route path="projects/:projectId" element={<ProjectDetailPage />}/>
