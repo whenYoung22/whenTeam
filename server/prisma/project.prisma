@@ -1,0 +1,21 @@
+// Project
+
+
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  color       String   @db.VarChar(20)
+  createdAt   DateTime @default(now()) @db.DateTime(3)
+  dueDate     DateTime @db.Date
+
+  creatorId Int
+  creator   User @relation("ProjectCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+
+  tasks     Task[]
+  members   ProjectMember[]
+  favorites ProjectFavorite[]
+
+  @@index([creatorId])
+  @@index([dueDate])
+}

@@ -1,0 +1,13 @@
+// ProjectFavorite
+
+model ProjectFavorite {
+  projectId Int
+  userId    Int
+
+  project Project @relation(fields: [projectId],references: [id],onDelete: Cascade)
+
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+
+  @@id([projectId, userId])
+  @@index([userId])
+}

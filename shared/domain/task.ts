@@ -22,6 +22,8 @@ export interface TaskResponse extends Omit<Task, "assigneeId"> {
   assignee: UserSummary;
 }
 
+
+// 状态则由服务端默认设为 TODO
 export interface CreateTaskRequest {
   title: string;
   description?: string;
@@ -30,6 +32,8 @@ export interface CreateTaskRequest {
   dueDate: DateOnly;
 }
 
+
+// 负责人和截止日期只是不传时保持原样，不接受 null 清空
 export interface UpdateTaskRequest {
   title?: string;
   description?: string;

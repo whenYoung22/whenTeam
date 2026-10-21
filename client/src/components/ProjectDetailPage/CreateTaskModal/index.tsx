@@ -1,6 +1,7 @@
 import { DatePicker, Form, Input, Modal, Select } from "antd";
 import type { Dayjs } from "dayjs";
-import type { CreateTaskRequest, TaskPriority } from "@shared/index";
+import dayjs from "dayjs";
+import type { CreateTaskRequest, DateOnly, TaskPriority } from "@shared/index";
 
 import { mockCollaborators } from "@/service/seed";
 
@@ -15,6 +16,7 @@ interface TaskFormValues {
 
 interface CreateTaskModalProps {
   open: boolean;
+  projectDueDate: DateOnly;
   onClose: () => void;
 }
 
@@ -32,6 +34,7 @@ const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
 
 export default function CreateTaskModal({
   open,
+  projectDueDate,
   onClose,
 }: CreateTaskModalProps) {
   const [form] = Form.useForm<TaskFormValues>();
@@ -111,9 +114,27 @@ export default function CreateTaskModal({
         <Form.Item
           name="dueDate"
           label="截止日期"
-          rules={[{ required: true, message: "请选择截止日期" }]}
+          rules={[
+            { required: true, message: "请选择截止日期" },
+            {
+              validator: async (_, dueDate: Dayjs | undefined) => {
+                if (
+                  dueDate &&
+                  dueDate.isAfter(dayjs(projectDueDate), "day")
+                ) {
+                  throw new Error("任务截止日期不能晚于项目截止日期");
+                }
+              },
+            },
+          ]}
         >
-          <DatePicker placeholder="请选择截止日期" style={{ width: "100%" }} />
+          <DatePicker
+            placeholder="请选择截止日期"
+            style={{ width: "100%" }}
+            disabledDate={(date) =>
+              date.isAfter(dayjs(projectDueDate), "day")
+            }
+          />
         </Form.Item>
       </Form>
     </Modal>

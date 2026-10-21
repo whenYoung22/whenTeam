@@ -78,10 +78,21 @@ export default function CreateProjectModal({
           />
         </Form.Item>
 
-        <Form.Item name="memberIds" label="项目成员">
+        <Form.Item
+          name="memberIds"
+          label="项目成员"
+          rules={[
+            { required: true, message: "请选择至少一位项目成员" },
+            {
+              type: "array",
+              min: 1,
+              message: "项目至少需要一位成员",
+            },
+          ]}
+        >
           <Select
             mode="multiple"
-            placeholder="请选择项目成员（选填）"
+            placeholder="请选择至少一位项目成员"
             options={MEMBER_OPTIONS}
             maxTagCount="responsive" // 选中多了自动折叠成 +N
           />

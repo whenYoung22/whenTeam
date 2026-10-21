@@ -21,10 +21,6 @@ export default function MainPage() {
     mockProjects.find((project) => String(project.id) === projectId) ?? null;
 
   // 返回项目总览
-  // const handleReturnToProjects = () => {
-  //   navigate("/");
-  // };
-
   const handleProjectListClick = () => {
     navigate("/");
   };
@@ -60,7 +56,6 @@ export default function MainPage() {
         <TopBar
           projectName={selectedProject?.name ?? null}
           userName={mockCurrentUser.name}
-          // onReturnToProjects={handleReturnToProjects}
           onSearchClick={handleSearchClick}
           onNotificationsClick={handleNotificationsClick}
         />

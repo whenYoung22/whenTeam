@@ -13,7 +13,6 @@ interface TopBarProps {
   userName: string;
   onSearchClick: () => void;
   onNotificationsClick: () => void;
-  // onReturnToProjects 删掉了：返回逻辑组件内部用 navigate 处理
 }
 
 export default function TopBar({

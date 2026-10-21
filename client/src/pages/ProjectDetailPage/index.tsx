@@ -51,11 +51,13 @@ export default function ProjectDetailPage() {
 
       <CreateTaskModal
         open={createTaskOpen}
+        projectDueDate={project.dueDate}
         onClose={() => setCreateTaskOpen(false)}
       />
 
       <TaskDetailModal
         task={selectedTask}
+        projectDueDate={project.dueDate}
         onClose={() => setSelectedTask(null)}
         onSave={handleSaveTask}
       />

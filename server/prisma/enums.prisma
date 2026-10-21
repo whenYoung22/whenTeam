@@ -1,0 +1,13 @@
+// TaskStatus、TaskPriority
+
+enum TaskStatus {
+  TODO
+  DOING
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
