@@ -1,9 +1,9 @@
 import { prisma } from "../lib/prisma.js";
-import type {
-    CreateProjectInput,
-} from "../validations/project.validation.js";
 
-const DEFAULT_PROJECT_COLOR = "#7067ef";
+import type { CreateProjectInput } from "../validations/project.validation.js";
+
+import { getSoftRandomColor } from "../utils/getSoftRandomColor.util.js";
+
 
 
 // 只查询当前用户参与的项目，并计算 progress、taskCount 和 isFavorite
@@ -73,7 +73,7 @@ export async function createProject(
             data: {
                 name: input.name,
                 description: input.description ?? null,
-                color: DEFAULT_PROJECT_COLOR,
+                color: getSoftRandomColor(),
                 dueDate: new Date(`${input.dueDate}T00:00:00.000Z`),
                 creatorId: userId,
                 members: {
