@@ -10,6 +10,30 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.project-panel-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.project-panel-edit-button,
+.project-panel-favorite-button {
+  flex-shrink: 0;
+  color: #667085;
+  font-size: 20px;
+}
+
+.project-panel-favorite-button.is-favorite {
+  color: #e4b558;
+}
+
+.project-panel-actions .project-panel-favorite-button.is-favorite.ant-btn:hover {
+  color: #fab835;
+  background: #f7f4ec;
 }
 
 .project-panel-title-group {

@@ -1,9 +1,13 @@
-import { DatePicker, Form, Input, Modal, Select } from "antd";
+import { DatePicker, Form, Input, message, Modal, Select } from "antd";
+import useProjectMutations from "@/hooks/useProjectMutations";
 import type { Dayjs } from "dayjs";
-import dayjs from "dayjs";
-import type { CreateTaskRequest, DateOnly, TaskPriority } from "@shared/index";
-
-import { mockCollaborators } from "@/service/seed";
+import type {
+  CreateTaskRequest,
+  DateOnly,
+  TaskPriority,
+  TaskResponse,
+  UserSummary,
+} from "@shared/index";
 
 
 interface TaskFormValues {
@@ -16,15 +20,12 @@ interface TaskFormValues {
 
 interface CreateTaskModalProps {
   open: boolean;
+  projectId: number;
   projectDueDate: DateOnly;
+  projectMembers: UserSummary[];
   onClose: () => void;
+  onCreated: (task: TaskResponse) => void;
 }
-
-/** 负责人选项：占位数据，后续换成接口返回的成员列表 */
-const ASSIGNEE_OPTIONS = mockCollaborators.map((user) => ({
-  label: user.name,
-  value: user.id,
-}));
 
 const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
   { value: "HIGH", label: "高" },
@@ -34,20 +35,47 @@ const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
 
 export default function CreateTaskModal({
   open,
+  projectId,
   projectDueDate,
+  projectMembers,
   onClose,
+  onCreated,
 }: CreateTaskModalProps) {
   const [form] = Form.useForm<TaskFormValues>();
+  const { createProjectTask, isPending } = useProjectMutations();
+  const today = new Date().toISOString().slice(0, 10);
+  const assigneeOptions = projectMembers.map((member) => ({
+    label: member.name,
+    value: member.id,
+  }));
 
   const handleSubmit = async () => {
-    // TODO: 后续接 service，成功后通知页面刷新列表
-    const values = await form.validateFields();
-    const request: CreateTaskRequest = {
-      ...values,
-      dueDate: values.dueDate.format("YYYY-MM-DD"),
-    };
-    console.log("创建任务：", request);
-    onClose();
+    try {
+      const values = await form.validateFields();
+      const request: CreateTaskRequest = {
+        title: values.title.trim(),
+        description: values.description?.trim(),
+        priority: values.priority,
+        assigneeId: values.assigneeId,
+        dueDate: values.dueDate.format("YYYY-MM-DD"),
+      };
+      const task = await createProjectTask(projectId, request);
+      onCreated(task);
+      form.resetFields();
+      onClose();
+      message.success("任务创建成功");
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "errorFields" in error
+      ) {
+        return;
+      }
+      message.error(
+        error instanceof Error ? error.message : "创建任务失败，请重试",
+      );
+    }
   };
 
   const handleCancel = () => {
@@ -60,6 +88,7 @@ export default function CreateTaskModal({
       title="创建任务"
       open={open}
       onOk={handleSubmit}
+      confirmLoading={isPending}
       onCancel={handleCancel}
       okText="创建"
       cancelText="取消"
@@ -106,7 +135,7 @@ export default function CreateTaskModal({
         >
           <Select
             placeholder="请选择负责人"
-            options={ASSIGNEE_OPTIONS}
+            options={assigneeOptions}
             showSearch
           />
         </Form.Item>
@@ -118,11 +147,14 @@ export default function CreateTaskModal({
             { required: true, message: "请选择截止日期" },
             {
               validator: async (_, dueDate: Dayjs | undefined) => {
-                if (
-                  dueDate &&
-                  dueDate.isAfter(dayjs(projectDueDate), "day")
-                ) {
-                  throw new Error("任务截止日期不能晚于项目截止日期");
+                if (dueDate) {
+                  const selectedDate = dueDate.format("YYYY-MM-DD");
+                  if (selectedDate < today) {
+                    throw new Error("任务截止日期不能早于今天");
+                  }
+                  if (selectedDate > projectDueDate) {
+                    throw new Error("任务截止日期不能晚于项目截止日期");
+                  }
                 }
               },
             },
@@ -131,9 +163,10 @@ export default function CreateTaskModal({
           <DatePicker
             placeholder="请选择截止日期"
             style={{ width: "100%" }}
-            disabledDate={(date) =>
-              date.isAfter(dayjs(projectDueDate), "day")
-            }
+            disabledDate={(date) => {
+              const selectedDate = date.format("YYYY-MM-DD");
+              return selectedDate < today || selectedDate > projectDueDate;
+            }}
           />
         </Form.Item>
       </Form>

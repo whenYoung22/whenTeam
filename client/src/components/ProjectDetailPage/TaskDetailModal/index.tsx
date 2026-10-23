@@ -7,9 +7,8 @@ import type {
   TaskPriority,
   TaskResponse,
   TaskStatus,
+  UserSummary,
 } from "@shared/index";
-
-import { mockCollaborators } from "@/service/seed";
 
 interface TaskFormValues {
   title: string;
@@ -23,6 +22,7 @@ interface TaskFormValues {
 interface TaskDetailModalProps {
   task: TaskResponse | null;
   projectDueDate: DateOnly;
+  projectMembers: UserSummary[];
   onClose: () => void;
   /** 保存编辑结果：由页面负责更新本地数据 */
   onSave: (task: TaskResponse) => void;
@@ -40,19 +40,18 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
   { value: "DONE", label: "已完成" },
 ];
 
-/** 负责人选项：占位数据，后续换成接口返回的成员列表 */
-const ASSIGNEE_OPTIONS = mockCollaborators.map((user) => ({
-  label: user.name,
-  value: user.id,
-}));
-
 export default function TaskDetailModal({
   task,
   projectDueDate,
+  projectMembers,
   onClose,
   onSave,
 }: TaskDetailModalProps) {
   const [form] = Form.useForm<TaskFormValues>();
+  const assigneeOptions = projectMembers.map((member) => ({
+    label: member.name,
+    value: member.id,
+  }));
 
   /** 弹窗打开（task 变化）时，把任务数据回填进表单 */
   useEffect(() => {
@@ -71,7 +70,7 @@ export default function TaskDetailModal({
     if (!task) return;
     const values = await form.validateFields();
     const { assigneeId, ...formValues } = values;
-    const assignee = mockCollaborators.find((user) => user.id === assigneeId);
+    const assignee = projectMembers.find((user) => user.id === assigneeId);
     if (!assignee) {
       throw new Error(`Unknown assignee id: ${assigneeId}`);
     }
@@ -137,7 +136,7 @@ export default function TaskDetailModal({
         >
           <Select
             placeholder="请选择负责人"
-            options={ASSIGNEE_OPTIONS}
+            options={assigneeOptions}
             showSearch
           />
         </Form.Item>

@@ -80,7 +80,11 @@ export default function ProjectList({
         </div>
       ) : (
         <div className="project-grid-empty">
-          <Empty description="暂无收藏项目" />
+          <Empty
+            description={
+              filter === "favorite" ? "暂无收藏项目" : "暂无项目"
+            }
+          />
         </div>
       )}
     </section>

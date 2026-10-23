@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 import { devAuth } from "./middlewares/dev-auth.js";
 
@@ -7,6 +8,11 @@ import projectRoutes from "./routes/project.routes.js";
 import { errorMiddleware } from "./middlewares/error.middlerware.js";
 
 const app = express();
+
+
+// 配置跨域 目前是*
+app.use(cors({ origin: "*" }));
+
 
 app.use(express.json());
 
@@ -23,7 +29,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/projects", devAuth, projectRoutes);
 
 // 处理 404 的普通中间件 如果请求走到了这里，说明前面的路由都没匹配上
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({
     success: false,
     error: { code: "NOT_FOUND", message: "接口不存在" }

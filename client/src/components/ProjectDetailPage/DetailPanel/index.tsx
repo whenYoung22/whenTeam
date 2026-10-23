@@ -1,25 +1,56 @@
-import { Avatar, Progress, Tooltip } from "antd";
-import {
-  CalendarOutlined,
-  CheckSquareOutlined,
-  ClockCircleOutlined,
-  TeamOutlined,
-} from "@ant-design/icons";
+import { useState } from "react";
+import { Avatar, Button, message, Progress, Tooltip } from "antd";
+import { CalendarOutlined, CheckSquareOutlined, ClockCircleOutlined, EllipsisOutlined, StarFilled, StarOutlined, TeamOutlined } from "@ant-design/icons";
 import type { ProjectDetailResponse } from "@shared/index";
+import EditProjectModal from "@/components/ProjectDetailPage/EditProjectModal";
 import "./index.css";
+
+function getMutedProjectColor(color: string): string {
+  const match = /^#?([0-9a-f]{6})$/i.exec(color);
+  if (!match) return "#667085";
+
+  const channels = match[1].match(/.{2}/g);
+  if (!channels) return "#667085";
+
+  const [red, green, blue] = channels.map((channel) =>
+    Number.parseInt(channel, 16),
+  );
+  const gray = Math.round(red * 0.299 + green * 0.587 + blue * 0.114);
+  const mix = (channel: number) => Math.round(channel * 0.55 + gray * 0.45);
+
+  return `#${[red, green, blue]
+    .map((channel) => mix(channel).toString(16).padStart(2, "0"))
+    .join("")}`;
+}
 
 interface DetailPanelProps {
   project: ProjectDetailResponse;
+  onSave: (project: ProjectDetailResponse) => void;
 }
 
-export default function DetailPanel({ project }: DetailPanelProps) {
+export default function DetailPanel({ project, onSave }: DetailPanelProps) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(project.isFavorite);
+  const projectAccentColor = getMutedProjectColor(project.color);
+
+  const handleSave = (updatedProject: ProjectDetailResponse) => {
+    onSave(updatedProject);
+    setEditOpen(false);
+    message.success("项目已更新");
+  };
+
+  const handleFavoriteToggle = () => {
+    // TODO: Persist the favorite state through the project favorites API.
+    setIsFavorite((favorite) => !favorite);
+  };
+
   return (
     <section className="project-panel">
       <div className="project-panel-header">
         <div className="project-panel-title-group">
           <span
             className="project-panel-color"
-            style={{ backgroundColor: project.color }}
+            style={{ backgroundColor: projectAccentColor }}
           />
 
           <div className="project-panel-title-content">
@@ -29,12 +60,32 @@ export default function DetailPanel({ project }: DetailPanelProps) {
             </p>
           </div>
         </div>
+
+        <div className="project-panel-actions">
+          <Button
+            type="text"
+            className={`project-panel-favorite-button${isFavorite ? " is-favorite" : ""}`}
+            icon={isFavorite ? <StarFilled /> : <StarOutlined />}
+            aria-label={isFavorite ? "取消收藏项目" : "收藏项目"}
+            aria-pressed={isFavorite}
+            title={isFavorite ? "取消收藏" : "收藏项目"}
+            onClick={handleFavoriteToggle}
+          />
+          <Button
+            type="text"
+            className="project-panel-edit-button"
+            icon={<EllipsisOutlined />}
+            aria-label="编辑项目"
+            title="编辑项目"
+            onClick={() => setEditOpen(true)}
+          />
+        </div>
       </div>
 
       <div className="project-panel-progress">
         <div className="project-panel-progress-header">
           <span>项目进度</span>
-          <span className="project-panel-progress-value">
+          <span className="project-panel-progress-value" style={{ color: projectAccentColor }}>
             {project.progress}%
           </span>
         </div>
@@ -42,7 +93,7 @@ export default function DetailPanel({ project }: DetailPanelProps) {
         <Progress
           percent={project.progress}
           showInfo={false}
-          strokeColor={project.color}
+          strokeColor={projectAccentColor}
           size={{ height: 8 }}
         />
       </div>
@@ -109,6 +160,13 @@ export default function DetailPanel({ project }: DetailPanelProps) {
           </span>
         </div>
       </div>
+
+      <EditProjectModal
+        open={editOpen}
+        project={project}
+        onClose={() => setEditOpen(false)}
+        onSave={handleSave}
+      />
     </section>
   );
 }

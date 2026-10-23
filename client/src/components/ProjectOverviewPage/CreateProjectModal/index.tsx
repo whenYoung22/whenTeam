@@ -1,8 +1,8 @@
-import { DatePicker, Form, Input, Modal, Select } from "antd";
+import { DatePicker, Form, Input, message, Modal, Select } from "antd";
 import type { Dayjs } from "dayjs";
-import type { CreateProjectRequest } from "@shared/index";
+import type { CreateProjectRequest, ProjectDetailResponse, UserSummary } from "@shared/index";
 
-import { mockCollaborators } from "@/service/seed";
+import useProjectMutations from "@/hooks/useProjectMutations";
 
 interface ProjectFormValues {
   name: string;
@@ -13,29 +13,52 @@ interface ProjectFormValues {
 
 interface CreateProjectModalProps {
   open: boolean;
+  collaborators: UserSummary[];
   onClose: () => void;
+  onCreated: (project: ProjectDetailResponse) => Promise<void>;
 }
-
-const MEMBER_OPTIONS = mockCollaborators.map((user) => ({
-  label: user.name,
-  value: user.id,
-}));
 
 export default function CreateProjectModal({
   open,
+  collaborators,
   onClose,
+  onCreated,
 }: CreateProjectModalProps) {
   const [form] = Form.useForm<ProjectFormValues>();
+  const { createProject, isPending } = useProjectMutations();
+
+  const memberOptions = collaborators.map((user) => ({
+    label: user.name,
+    value: user.id,
+  }));
 
   const handleSubmit = async () => {
-    // TODO: 后续接 service，成功后通知页面刷新列表
-    const values = await form.validateFields();
-    const request: CreateProjectRequest = {
-      ...values,
-      dueDate: values.dueDate.format("YYYY-MM-DD"),
-    };
-    console.log("创建项目：", request);
-    onClose();
+    try {
+      const values = await form.validateFields();
+      const request: CreateProjectRequest = {
+        name: values.name.trim(),
+        description: values.description?.trim(),
+        dueDate: values.dueDate.format("YYYY-MM-DD"),
+        memberIds: values.memberIds ?? [],
+      };
+      const project = await createProject(request);
+      await onCreated(project);
+      form.resetFields();
+      message.success("项目创建成功");
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "errorFields" in error
+      ) {
+        return;
+      }
+      if (error instanceof Error) {
+        message.error(error.message);
+      } else {
+        message.error("创建项目失败，请重试");
+      }
+    }
   };
 
   const handleCancel = () => {
@@ -48,6 +71,7 @@ export default function CreateProjectModal({
       title="新建项目"
       open={open}
       onOk={handleSubmit}
+      confirmLoading={isPending}
       onCancel={handleCancel}
       okText="创建"
       cancelText="取消"
@@ -81,19 +105,11 @@ export default function CreateProjectModal({
         <Form.Item
           name="memberIds"
           label="项目成员"
-          rules={[
-            { required: true, message: "请选择至少一位项目成员" },
-            {
-              type: "array",
-              min: 1,
-              message: "项目至少需要一位成员",
-            },
-          ]}
         >
           <Select
             mode="multiple"
-            placeholder="请选择至少一位项目成员"
-            options={MEMBER_OPTIONS}
+            placeholder="可选：添加项目成员"
+            options={memberOptions}
             maxTagCount="responsive" // 选中多了自动折叠成 +N
           />
         </Form.Item>

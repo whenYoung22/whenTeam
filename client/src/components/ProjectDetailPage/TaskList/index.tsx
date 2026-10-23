@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Button, Table, Tabs, Tag } from "antd";
+import { Button, Empty, Table, Tabs, Tag, Tooltip } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 
 import type { TableProps } from "antd";
@@ -131,14 +131,22 @@ export default function TaskList({
         </div>
 
         {/* 右侧：创建任务按钮 */}
-        <Button
-          type="primary"
-          className="task-list-create-btn"
-          icon={<PlusOutlined />}
-          onClick={onCreateTask}
+        <Tooltip
+          title={onCreateTask ? undefined : "任务创建功能尚未接入"}
+          mouseEnterDelay={0.4}
         >
-          创建任务
-        </Button>
+          <span>
+            <Button
+              type="primary"
+              className="task-list-create-btn"
+              icon={<PlusOutlined />}
+              onClick={onCreateTask}
+              disabled={!onCreateTask}
+            >
+              创建任务
+            </Button>
+          </span>
+        </Tooltip>
       </div>
 
       <Tabs
@@ -190,6 +198,17 @@ export default function TaskList({
         rowKey="id"
         columns={columns}
         dataSource={filteredTasks}
+        locale={{
+          emptyText: (
+            <Empty
+              description={
+                tasks.length === 0
+                  ? "当前项目暂无任务"
+                  : "没有符合当前筛选的任务"
+              }
+            />
+          ),
+        }}
         pagination={false}
         rowClassName={(_record, index) =>
           index % 2 === 1 ? "table-stripe-row" : ""

@@ -1,4 +1,5 @@
 import { useNavigate, useParams, Outlet } from "react-router-dom";
+import { useEffect } from "react";
 
 import { message } from "antd";
 
@@ -6,8 +7,8 @@ import TopBar from "@/components/common/TopBar";
 import SideBar from "@/components/common/SideBar";
 import Footer from "@/components/common/Footer";
 
-import { mockCurrentUser, mockProjects } from "@/service/seed";
-
+import useProjectList from "@/hooks/useProjectList";
+import { mockCurrentUser } from "@/service/seed";
 import type { ProjectListItem } from "@shared/index";
 
 import "./index.css";
@@ -15,10 +16,14 @@ import "./index.css";
 export default function MainPage() {
   const navigate = useNavigate();
   const { projectId } = useParams();
+  const { projects, setProjects, error, reload } = useProjectList();
 
-  // 根据 URL 确定当前选中的项目
+  useEffect(() => {
+    if (error) message.error(error);
+  }, [error]);
+
   const selectedProject: ProjectListItem | null =
-    mockProjects.find((project) => String(project.id) === projectId) ?? null;
+    projects.find((project) => String(project.id) === projectId) ?? null;
 
   // 返回项目总览
   const handleProjectListClick = () => {
@@ -45,7 +50,7 @@ export default function MainPage() {
   return (
     <div className="main-page">
       <SideBar
-        projects={mockProjects}
+        projects={projects}
         selectedProjectId={selectedProject?.id ?? null}
         onProjectListClick={handleProjectListClick}
         onProjectClick={handleProjectClick}
@@ -61,7 +66,7 @@ export default function MainPage() {
         />
 
         <main className="main-page-content">
-          <Outlet />
+          <Outlet context={{ projects, setProjects, reloadProjects: reload }} />
         </main>
 
         <Footer />
