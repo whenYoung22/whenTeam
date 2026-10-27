@@ -1,5 +1,5 @@
 import { useNavigate, useParams, Outlet } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { message } from "antd";
 
@@ -9,9 +9,10 @@ import Footer from "@/components/common/Footer";
 
 import useProjectList from "@/hooks/useProjectList";
 
-import { mockCurrentUser } from "@/service/seed";
+import { getCurrentUser } from "@/api/auth";
+import { clearAuthToken } from "@/utils/authToken";
 
-import type { ProjectListItem } from "@shared/index";
+import type { ProjectListItem, User } from "@shared/index";
 
 import "./index.css";
 
@@ -19,10 +20,32 @@ export default function MainPage() {
   const navigate = useNavigate();
   const { projectId } = useParams();
   const { projects, setProjects, error, reload } = useProjectList();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (error) message.error(error);
   }, [error]);
+
+  useEffect(() => {
+    let active = true;
+    getCurrentUser()
+      .then((user) => {
+        if (active) setCurrentUser(user);
+      })
+      .catch((requestError: unknown) => {
+        if (active) {
+          message.error(
+            requestError instanceof Error
+              ? requestError.message
+              : "获取用户信息失败",
+          );
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const selectedProject: ProjectListItem | null =
     projects.find((project) => String(project.id) === projectId) ?? null;
@@ -46,7 +69,8 @@ export default function MainPage() {
   };
 
   const handleLogout = () => {
-    message.info("退出登录功能暂未接入");
+    clearAuthToken();
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -62,7 +86,7 @@ export default function MainPage() {
       <div className="main-page-body">
         <TopBar
           projectName={selectedProject?.name ?? null}
-          userName={mockCurrentUser.name}
+          userName={currentUser?.name ?? ""}
           onSearchClick={handleSearchClick}
           onNotificationsClick={handleNotificationsClick}
         />

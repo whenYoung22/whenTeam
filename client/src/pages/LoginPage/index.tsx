@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { Button, Form, Input, Typography, message } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
+
+import { login } from "@/api/auth";
+import { setAuthToken } from "@/utils/authToken";
 
 import "./index.css";
 
@@ -14,14 +18,17 @@ interface LoginFormValues {
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const onFinish = async (values: LoginFormValues) => {
     setLoading(true);
 
     try {
-      // TODO: 后续接入登录 API 和 JWT 认证
-      console.log("Login form values:", values);
-      message.info("登录接口尚未接入");
+      const result = await login(values);
+      setAuthToken(result.token);
+      navigate("/", { replace: true });
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "登录失败，请稍后重试");
     } finally {
       setLoading(false);
     }

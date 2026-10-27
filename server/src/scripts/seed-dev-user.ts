@@ -1,15 +1,22 @@
 
 import { prisma } from "../lib/prisma.js";
+import { hash } from "bcryptjs";
 
 async function main() {
+  const password = process.env.SEED_USER_PASSWORD;
+  if (!password || Buffer.byteLength(password, "utf8") > 72) {
+    throw new Error("SEED_USER_PASSWORD must be set and no more than 72 bytes");
+  }
+
+  const passwordHash = await hash(password, 12);
   const user = await prisma.user.upsert({
     where: {
       name: "dev-user",
     },
-    update: {},
+    update: { passwordHash },
     create: {
       name: "dev-user",
-      passwordHash: "development-only",
+      passwordHash,
     },
   });
 

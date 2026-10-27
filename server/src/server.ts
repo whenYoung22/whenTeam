@@ -3,8 +3,11 @@
 
 import "dotenv/config";
 import app from "./app.js";
+import { getAuthSecret } from "./utils/auth-token.util.js";
 
 const PORT = Number(process.env.PORT) || 3000;
+
+getAuthSecret();
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

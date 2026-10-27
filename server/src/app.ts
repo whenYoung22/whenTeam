@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
 
-import { devAuth } from "./middlewares/dev-auth.js";
+import authRoutes from "./routes/auth.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 import projectRoutes from "./routes/project.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 
+import { authMiddleware } from "./middlewares/auth.middleware.js";
 import { errorMiddleware } from "./middlewares/error.middlerware.js";
 
 const app = express();
@@ -26,9 +28,21 @@ app.get("/api/health", (_req, res) => {
 });
 
 
-// 项目和任务接口暂时使用开发身份
-app.use("/api/projects", devAuth, projectRoutes);
-app.use("/api", devAuth, taskRoutes);
+// 登录 不需要走鉴权中间件 ⚠️需要最先注册，在鉴权路由前面
+app.use("/api/auth", authRoutes);
+
+
+// 对以下所有路由 鉴权
+app.use("/api", authMiddleware);
+
+// 查询用户
+app.use("/api/auth", userRoutes);
+
+// 项目
+app.use("/api/projects", projectRoutes);
+
+// 任务
+app.use("/api", taskRoutes);
 
 // 处理 404 的普通中间件 如果请求走到了这里，说明前面的路由都没匹配上
 app.use((_req, res) => {
