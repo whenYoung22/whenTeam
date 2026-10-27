@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import type { ReactNode } from "react";
 
 import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
 
 import MainPage from "@/pages/MainPage";
 import ProjectOverviewPage from "@/pages/ProjectOverviewPage";
@@ -26,6 +27,14 @@ export default function AppRouter() {
           element={
             <GuestOnly>
               <LoginPage />
+            </GuestOnly>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <GuestOnly>
+              <RegisterPage />
             </GuestOnly>
           }
         />

@@ -7,6 +7,8 @@ export type {
   UserSummary,
   LoginRequest,
   LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
 } from "./domain/user";
 
 export type {

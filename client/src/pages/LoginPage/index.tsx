@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button, Form, Input, Typography, message } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
@@ -100,6 +100,11 @@ export default function LoginPage() {
             </Button>
           </Form.Item>
         </Form>
+
+        <div className="login-footer">
+          <Text type="secondary">还没有账号？</Text>{" "}
+          <Link to="/register">立即注册</Link>
+        </div>
 
         <div className="login-footer">
           <Text type="secondary">

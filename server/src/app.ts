@@ -28,7 +28,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 
-// 登录 不需要走鉴权中间件 ⚠️需要最先注册，在鉴权路由前面
+// 注册和登录不需要走鉴权中间件，需要最先注册
 app.use("/api/auth", authRoutes);
 
 
