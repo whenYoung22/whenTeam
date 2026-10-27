@@ -6,10 +6,6 @@ import {
   getProjectsController,
   updateProjectController,
 } from "../controllers/project.controller.js";
-import {
-  createProjectTaskController,
-  getProjectTasksController,
-} from "../controllers/task.controller.js";
 
 const router = Router();
 
@@ -22,12 +18,6 @@ router.get("/", getProjectsController);
 
 // POST /api/projects 创建项目
 router.post("/", createProjectController);
-
-// GET /api/projects/:projectId/tasks 查询项目任务
-router.get("/:projectId/tasks", getProjectTasksController);
-
-// POST /api/projects/:projectId/tasks 创建项目任务
-router.post("/:projectId/tasks", createProjectTaskController);
 
 // GET /api/projects/:projectId 查询项目详情
 router.get("/:projectId", getProjectController);

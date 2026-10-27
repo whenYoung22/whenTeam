@@ -1,21 +1,21 @@
 import type {
   ApiSuccessResponse,
   CreateProjectRequest,
-  CreateTaskRequest,
   ProjectDetailResponse,
   ProjectListItem,
   ProjectOverviewResponse,
-  TaskResponse,
   UpdateProjectRequest,
 } from "@shared/index";
 import apiClient from "@/service/apiClient";
 
+// 查询项目列表 projectList
 export async function getProjects(): Promise<ProjectListItem[]> {
   const response =
     await apiClient.get<ApiSuccessResponse<ProjectListItem[]>>("/api/projects");
   return response.data.data;
 }
 
+// 查项目总览 overviewPage overviewPanel
 export async function getProjectOverview(): Promise<ProjectOverviewResponse> {
   const response = await apiClient.get<
     ApiSuccessResponse<ProjectOverviewResponse>
@@ -23,6 +23,7 @@ export async function getProjectOverview(): Promise<ProjectOverviewResponse> {
   return response.data.data;
 }
 
+//查项目详情 detailPage detailPanel
 export async function getProjectDetail(
   projectId: number,
 ): Promise<ProjectDetailResponse> {
@@ -32,6 +33,7 @@ export async function getProjectDetail(
   return response.data.data;
 }
 
+// 创建项目 overviewPage
 export async function createProject(
   request: CreateProjectRequest,
 ): Promise<ProjectDetailResponse> {
@@ -41,6 +43,7 @@ export async function createProject(
   return response.data.data;
 }
 
+// 编辑更新项目 detailPage
 export async function updateProject(
   projectId: number,
   request: UpdateProjectRequest,
@@ -48,25 +51,5 @@ export async function updateProject(
   const response = await apiClient.patch<
     ApiSuccessResponse<ProjectDetailResponse>
   >(`/api/projects/${projectId}`, request);
-  return response.data.data;
-}
-
-export async function getProjectTaskList(
-  projectId: number,
-): Promise<TaskResponse[]> {
-  const response = await apiClient.get<ApiSuccessResponse<TaskResponse[]>>(
-    `/api/projects/${projectId}/tasks`,
-  );
-  return response.data.data;
-}
-
-export async function createProjectTask(
-  projectId: number,
-  request: CreateTaskRequest,
-): Promise<TaskResponse> {
-  const response = await apiClient.post<ApiSuccessResponse<TaskResponse>>(
-    `/api/projects/${projectId}/tasks`,
-    request,
-  );
   return response.data.data;
 }

@@ -1,18 +1,16 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useOutletContext, useParams } from "react-router-dom";
+
 import { Alert, Button, Empty, Spin } from "antd";
 
 import DetailPanel from "@/components/ProjectDetailPage/DetailPanel";
 import TaskList from "@/components/ProjectDetailPage/TaskList";
 import CreateTaskModal from "@/components/ProjectDetailPage/CreateTaskModal";
 import TaskDetailModal from "@/components/ProjectDetailPage/TaskDetailModal";
+
 import useProjectDetailData from "@/hooks/useProjectDetailData";
 
-import type {
-  ProjectDetailResponse,
-  ProjectListItem,
-  TaskResponse,
-} from "@shared/index";
+import type { ProjectDetailResponse,ProjectListItem,TaskResponse } from "@shared/index";
 
 interface ProjectOutletContext {
   setProjects: Dispatch<SetStateAction<ProjectListItem[]>>;
@@ -35,7 +33,7 @@ export default function ProjectDetailPage() {
         <Alert
           type="error"
           showIcon
-          message="项目详情加载失败"
+          title="项目详情加载失败"
           description={error}
           action={
             <Button size="small" onClick={retry}>重试</Button>
@@ -54,18 +52,13 @@ export default function ProjectDetailPage() {
           padding: "96px 0",
         }}
       >
-        <Spin size="large" tip="正在加载项目..." />
+        <Spin size="large" description="正在加载项目..." />
       </div>
     );
   }
 
   return (
-    <ProjectDetailContent
-      key={id}
-      initialProject={project}
-      initialTasks={tasks}
-      setProjects={setProjects}
-    />
+    <ProjectDetailContent key={id} initialProject={project} initialTasks={tasks} setProjects={setProjects}/>
   );
 }
 
@@ -104,54 +97,61 @@ function ProjectDetailContent({
   };
 
   const handleTaskCreated = (task: TaskResponse) => {
-    setTasks((currentTasks) =>
-      [...currentTasks, task].sort(
-        (a, b) =>
-          a.dueDate.localeCompare(b.dueDate) ||
-          b.createdAt.localeCompare(a.createdAt),
-      ),
+    const updatedTasks = [...tasks, task].sort(
+      (a, b) =>
+        a.dueDate.localeCompare(b.dueDate) ||
+        b.createdAt.localeCompare(a.createdAt),
     );
-
-    const taskCount = project.taskCount + 1;
-    const updatedProject = {
-      ...project,
-      taskCount,
-      progress: Math.round(
-        (tasks.filter((item) => item.status === "DONE").length / taskCount) *
-          100,
-      ),
-    };
-    setProject(updatedProject);
-    setProjects((projects) =>
-      projects.map((item) =>
-        item.id === updatedProject.id
-          ? {
-              ...item,
-              taskCount: updatedProject.taskCount,
-              progress: updatedProject.progress,
-            }
-          : item,
-      ),
-    );
+    setTasks(updatedTasks);
+    updateTaskMetrics(updatedTasks);
   };
 
   const handleTaskSave = (updatedTask: TaskResponse) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task,
+    const updatedTasks = tasks
+      .map((task) => (task.id === updatedTask.id ? updatedTask : task))
+      .sort(
+        (a, b) =>
+          a.dueDate.localeCompare(b.dueDate) ||
+          b.createdAt.localeCompare(a.createdAt),
+      );
+    setTasks(updatedTasks);
+    updateTaskMetrics(updatedTasks);
+    setSelectedTask(null);
+  };
+
+  const updateTaskMetrics = (updatedTasks: TaskResponse[]) => {
+    const taskCount = updatedTasks.length;
+    const progress =
+      taskCount === 0
+        ? 0
+        : Math.round(
+            (updatedTasks.filter((task) => task.status === "DONE").length /
+              taskCount) *
+              100,
+          );
+
+    setProject((currentProject) => ({
+      ...currentProject,
+      taskCount,
+      progress,
+    }));
+    setProjects((projects) =>
+      projects.map((item) =>
+        item.id === project.id ? { ...item, taskCount, progress } : item,
       ),
     );
-    setSelectedTask(null);
   };
 
   return (
     <section className="project-detail-page">
       <DetailPanel project={project} onSave={handleSaveProject} />
+
       <TaskList
         tasks={tasks}
         onCreateTask={() => setCreateTaskOpen(true)}
         onTaskClick={setSelectedTask}
       />
+
       <CreateTaskModal
         open={createTaskOpen}
         projectId={project.id}
@@ -160,6 +160,7 @@ function ProjectDetailContent({
         onClose={() => setCreateTaskOpen(false)}
         onCreated={handleTaskCreated}
       />
+
       <TaskDetailModal
         task={selectedTask}
         projectDueDate={project.dueDate}

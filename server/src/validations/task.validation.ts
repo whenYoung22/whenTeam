@@ -23,3 +23,19 @@ export const createTaskSchema = z
   .strict();
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+
+export const updateTaskSchema = z
+  .object({
+    title: z.string().trim().min(1, "任务标题不能为空").max(200).optional(),
+    description: z.string().trim().max(5000).optional(),
+    status: z.enum(["TODO", "DOING", "DONE"]).optional(),
+    priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+    assigneeId: z.number().int().positive().optional(),
+    dueDate: dateOnlySchema.optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "至少提供一个需要更新的字段",
+  });
+
+export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;

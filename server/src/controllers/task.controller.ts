@@ -4,8 +4,12 @@ import { sendSuccess } from "../utils/response.util.js";
 import {
   createProjectTask,
   getProjectTasks,
+  updateTask,
 } from "../services/task.service.js";
-import { createTaskSchema } from "../validations/task.validation.js";
+import {
+  createTaskSchema,
+  updateTaskSchema,
+} from "../validations/task.validation.js";
 
 function parseProjectId(value: string | string[] | undefined): number {
   if (typeof value !== "string") {
@@ -18,6 +22,19 @@ function parseProjectId(value: string | string[] | undefined): number {
   }
 
   return projectId;
+}
+
+function parseTaskId(value: string | string[] | undefined): number {
+  if (typeof value !== "string") {
+    throw new AppError(400, "INVALID_TASK_ID", "任务 ID 无效");
+  }
+
+  const taskId = Number(value);
+  if (!Number.isSafeInteger(taskId) || taskId <= 0) {
+    throw new AppError(400, "INVALID_TASK_ID", "任务 ID 无效");
+  }
+
+  return taskId;
 }
 
 /** GET /api/projects/:projectId/tasks：查询项目任务列表。 */
@@ -51,6 +68,21 @@ export const createProjectTaskController: RequestHandler = async (
       input,
     );
     sendSuccess(res, task, 201);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** PATCH /api/tasks/:taskId：更新任务。 */
+export const updateTaskController: RequestHandler = async (req, res, next) => {
+  try {
+    const input = updateTaskSchema.parse(req.body);
+    const task = await updateTask(
+      res.locals.userId as number,
+      parseTaskId(req.params.taskId),
+      input,
+    );
+    sendSuccess(res, task);
   } catch (error) {
     next(error);
   }

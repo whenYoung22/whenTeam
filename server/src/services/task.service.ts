@@ -2,7 +2,10 @@ import type { TaskResponse, UserSummary } from "../../../shared/index.js";
 import type { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../utils/AppError.util.js";
-import type { CreateTaskInput } from "../validations/task.validation.js";
+import type {
+  CreateTaskInput,
+  UpdateTaskInput,
+} from "../validations/task.validation.js";
 
 const taskInclude = {
   assignee: {
@@ -125,6 +128,79 @@ export async function createProjectTask(
       projectId,
       assigneeId: input.assigneeId,
     },
+    include: taskInclude,
+  });
+
+  return toTaskResponse(task);
+}
+
+/** Update a task that belongs to a project the user can access. */
+export async function updateTask(
+  userId: number,
+  taskId: number,
+  input: UpdateTaskInput,
+): Promise<TaskResponse> {
+  const existingTask = await prisma.task.findFirst({
+    where: {
+      id: taskId,
+      project: {
+        members: {
+          some: { userId },
+        },
+      },
+    },
+    select: {
+      project: {
+        select: {
+          dueDate: true,
+          members: {
+            select: { userId: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!existingTask) {
+    throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
+  }
+
+  if (
+    input.assigneeId !== undefined &&
+    !existingTask.project.members.some(
+      ({ userId: memberId }) => memberId === input.assigneeId,
+    )
+  ) {
+    throw new AppError(
+      400,
+      "ASSIGNEE_NOT_PROJECT_MEMBER",
+      "任务负责人必须是项目成员",
+    );
+  }
+
+  const dueDate =
+    input.dueDate === undefined
+      ? undefined
+      : new Date(`${input.dueDate}T00:00:00.000Z`);
+  if (dueDate && dueDate > existingTask.project.dueDate) {
+    throw new AppError(
+      409,
+      "TASK_DUE_DATE_CONFLICT",
+      "任务截止日期不能晚于项目截止日期",
+    );
+  }
+
+  const data: Prisma.TaskUncheckedUpdateInput = {};
+  if (input.title !== undefined) data.title = input.title;
+  if (input.description !== undefined) data.description = input.description;
+  if (input.status !== undefined) data.status = input.status;
+  if (input.priority !== undefined) data.priority = input.priority;
+  if (input.assigneeId !== undefined) data.assigneeId = input.assigneeId;
+  if (dueDate !== undefined) data.dueDate = dueDate;
+
+  const task = await prisma.task.update({
+    where: { id: taskId },
+    data,
     include: taskInclude,
   });
 

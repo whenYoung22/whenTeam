@@ -4,6 +4,7 @@ import cors from "cors";
 import { devAuth } from "./middlewares/dev-auth.js";
 
 import projectRoutes from "./routes/project.routes.js";
+import taskRoutes from "./routes/task.routes.js";
 
 import { errorMiddleware } from "./middlewares/error.middlerware.js";
 
@@ -25,8 +26,9 @@ app.get("/api/health", (_req, res) => {
 });
 
 
-// Project 接口暂时使用开发身份
+// 项目和任务接口暂时使用开发身份
 app.use("/api/projects", devAuth, projectRoutes);
+app.use("/api", devAuth, taskRoutes);
 
 // 处理 404 的普通中间件 如果请求走到了这里，说明前面的路由都没匹配上
 app.use((_req, res) => {

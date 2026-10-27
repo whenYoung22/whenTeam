@@ -1,14 +1,11 @@
 import { useCallback, useState } from "react";
 import type {
   CreateProjectRequest,
-  CreateTaskRequest,
   ProjectDetailResponse,
-  TaskResponse,
   UpdateProjectRequest,
 } from "@shared/index";
 import {
   createProject as createProjectRequest,
-  createProjectTask as createProjectTaskRequest,
   updateProject as updateProjectRequest,
 } from "@/api/project";
 
@@ -27,21 +24,14 @@ export default function useProjectMutations() {
     [],
   );
 
+  // 创建项目 modal用
   const createProject = useCallback(
     (request: CreateProjectRequest): Promise<ProjectDetailResponse> =>
       runMutation(() => createProjectRequest(request)),
     [runMutation],
   );
 
-  const createProjectTask = useCallback(
-    (
-      projectId: number,
-      request: CreateTaskRequest,
-    ): Promise<TaskResponse> =>
-      runMutation(() => createProjectTaskRequest(projectId, request)),
-    [runMutation],
-  );
-
+  // 更新编辑项目
   const updateProject = useCallback(
     (
       projectId: number,
@@ -53,7 +43,6 @@ export default function useProjectMutations() {
 
   return {
     createProject,
-    createProjectTask,
     updateProject,
     isPending: pendingCount > 0,
   };

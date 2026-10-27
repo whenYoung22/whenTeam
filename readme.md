@@ -114,6 +114,7 @@ whenTeam/
 - `Task` 表示任务基础数据，负责人关联使用 `assigneeId`；`TaskResponse` 面向前端并包含 `assignee` 用户摘要。
 - 创建、更新任务分别使用 `CreateTaskRequest`、`UpdateTaskRequest`。创建任务所属项目由项目路由确定，不在请求体重复传 `projectId`。
 - 项目成员可以创建任务；任务负责人必须是该项目成员。任务状态由服务端默认设为 `TODO`。
+- 项目成员可以更新所属项目的任务；更新任务通过 `PATCH /api/tasks/:taskId`，任务列表和创建任务仍通过项目路径访问。
 - 任务截止日期和负责人必填；更新时可以省略对应字段表示不修改，但不能传 `null` 清空。
 - 任务截止日期不得晚于所属项目的截止日期。创建和更新任务时，服务端业务逻辑都必须比较这两个日期；前端表单也会限制可选日期，但不能用前端限制替代服务端检查。
 - 创建任务时状态由服务端默认设为 `TODO`；客户端通过更新请求修改状态。
@@ -122,16 +123,16 @@ whenTeam/
 
 接口可以按以下资源组织；具体路由实现时以这些共享请求/响应类型为准：
 
-| 操作 | 请求体 | 成功数据 |
-| --- | --- | --- |
-| 获取项目总览 | — | `ProjectOverviewResponse` |
-| 获取项目列表 | — | `ProjectListItem[]` |
-| 获取项目详情 | — | `ProjectDetailResponse` |
-| 创建项目 | `CreateProjectRequest` | `ProjectDetailResponse` |
-| 更新项目 | `UpdateProjectRequest` | `ProjectDetailResponse` |
-| 获取项目任务 | — | `TaskResponse[]` |
-| 创建项目任务 | `CreateTaskRequest` | `TaskResponse` |
-| 更新任务 | `UpdateTaskRequest` | `TaskResponse` |
+| 操作 | 方法与路径 | 请求体 | 成功数据 |
+| --- | --- | --- | --- |
+| 获取项目总览 | `GET /api/projects/overview` | — | `ProjectOverviewResponse` |
+| 获取项目列表 | `GET /api/projects` | — | `ProjectListItem[]` |
+| 获取项目详情 | `GET /api/projects/:projectId` | — | `ProjectDetailResponse` |
+| 创建项目 | `POST /api/projects` | `CreateProjectRequest` | `ProjectDetailResponse` |
+| 更新项目 | `PATCH /api/projects/:projectId` | `UpdateProjectRequest` | `ProjectDetailResponse` |
+| 获取项目任务 | `GET /api/projects/:projectId/tasks` | — | `TaskResponse[]` |
+| 创建项目任务 | `POST /api/projects/:projectId/tasks` | `CreateTaskRequest` | `TaskResponse` |
+| 更新任务 | `PATCH /api/tasks/:taskId` | `UpdateTaskRequest` | `TaskResponse` |
 
 
 

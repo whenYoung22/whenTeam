@@ -1,12 +1,14 @@
 import { useEffect } from "react";
-import { DatePicker, Form, Input, Modal, Select } from "antd";
+import { DatePicker, Form, Input, message, Modal, Select } from "antd";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
+import useTaskMutations from "@/hooks/useTaskMutations";
 import type {
   DateOnly,
   TaskPriority,
   TaskResponse,
   TaskStatus,
+  UpdateTaskRequest,
   UserSummary,
 } from "@shared/index";
 
@@ -24,7 +26,7 @@ interface TaskDetailModalProps {
   projectDueDate: DateOnly;
   projectMembers: UserSummary[];
   onClose: () => void;
-  /** 保存编辑结果：由页面负责更新本地数据 */
+  /** 保存成功后由页面更新本地数据 */
   onSave: (task: TaskResponse) => void;
 }
 
@@ -48,6 +50,7 @@ export default function TaskDetailModal({
   onSave,
 }: TaskDetailModalProps) {
   const [form] = Form.useForm<TaskFormValues>();
+  const { updateTask, isPending } = useTaskMutations();
   const assigneeOptions = projectMembers.map((member) => ({
     label: member.name,
     value: member.id,
@@ -68,20 +71,32 @@ export default function TaskDetailModal({
 
   const handleSave = async () => {
     if (!task) return;
-    const values = await form.validateFields();
-    const { assigneeId, ...formValues } = values;
-    const assignee = projectMembers.find((user) => user.id === assigneeId);
-    if (!assignee) {
-      throw new Error(`Unknown assignee id: ${assigneeId}`);
+    try {
+      const values = await form.validateFields();
+      const request: UpdateTaskRequest = {
+        title: values.title.trim(),
+        description: values.description?.trim() ?? "",
+        status: values.status,
+        priority: values.priority,
+        assigneeId: values.assigneeId,
+        dueDate: values.dueDate.format("YYYY-MM-DD"),
+      };
+      const updatedTask = await updateTask(task.id, request);
+      onSave(updatedTask);
+      onClose();
+      message.success("任务更新成功");
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "errorFields" in error
+      ) {
+        return;
+      }
+      message.error(
+        error instanceof Error ? error.message : "更新任务失败，请重试",
+      );
     }
-    onSave({
-      ...task,
-      ...formValues,
-      assignee,
-      description: values.description ?? "",
-      dueDate: values.dueDate.format("YYYY-MM-DD"),
-    });
-    onClose();
   };
 
   const handleCancel = () => {
@@ -94,6 +109,7 @@ export default function TaskDetailModal({
       title="任务详情"
       open={!!task}
       onOk={handleSave}
+      confirmLoading={isPending}
       onCancel={handleCancel}
       okText="保存"
       cancelText="取消"

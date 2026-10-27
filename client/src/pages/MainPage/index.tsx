@@ -8,7 +8,9 @@ import SideBar from "@/components/common/SideBar";
 import Footer from "@/components/common/Footer";
 
 import useProjectList from "@/hooks/useProjectList";
+
 import { mockCurrentUser } from "@/service/seed";
+
 import type { ProjectListItem } from "@shared/index";
 
 import "./index.css";

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ProjectDetailResponse, TaskResponse } from "@shared/index";
-import { getProjectDetail, getProjectTaskList } from "@/api/project";
+
+import { getProjectDetail } from "@/api/project";
+import { getProjectTaskList } from "@/api/task";
 
 interface ProjectDetailData {
   project: ProjectDetailResponse;
@@ -13,6 +15,7 @@ interface LoadState {
   error: string | null;
 }
 
+// 项目详情页所需要的数据：任务详情看板，项目里的任务列表
 export default function useProjectDetailData(projectId: number) {
   const [loadState, setLoadState] = useState<LoadState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +29,7 @@ export default function useProjectDetailData(projectId: number) {
       };
     }
 
+    // 使用 Promise.all 并行请求项目详情和任务列表。并行请求可以避免一个请求结束后才启动另一个
     Promise.all([getProjectDetail(projectId), getProjectTaskList(projectId)])
       .then(([project, tasks]) => {
         if (!cancelled) {

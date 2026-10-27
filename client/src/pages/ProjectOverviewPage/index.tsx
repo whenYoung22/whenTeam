@@ -75,7 +75,7 @@ export default function ProjectOverviewPage() {
         <Alert
           type="error"
           showIcon
-          message="项目总览加载失败"
+          title="项目总览加载失败"
           description={overviewError}
           action={
             <button type="button" onClick={retryOverview}>
@@ -85,7 +85,7 @@ export default function ProjectOverviewPage() {
         />
       ) : overviewLoading && !overview ? (
         <div style={{ display: "flex", justifyContent: "center", padding: 48 }}>
-          <Spin tip="正在加载项目总览..." />
+          <Spin description="正在加载项目总览..." />
         </div>
       ) : (
         overview && (

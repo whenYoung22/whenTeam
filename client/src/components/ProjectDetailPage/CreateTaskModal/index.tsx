@@ -1,5 +1,5 @@
 import { DatePicker, Form, Input, message, Modal, Select } from "antd";
-import useProjectMutations from "@/hooks/useProjectMutations";
+import useTaskMutations from "@/hooks/useTaskMutations";
 import type { Dayjs } from "dayjs";
 import type {
   CreateTaskRequest,
@@ -42,7 +42,7 @@ export default function CreateTaskModal({
   onCreated,
 }: CreateTaskModalProps) {
   const [form] = Form.useForm<TaskFormValues>();
-  const { createProjectTask, isPending } = useProjectMutations();
+  const { createTask, isPending } = useTaskMutations();
   const today = new Date().toISOString().slice(0, 10);
   const assigneeOptions = projectMembers.map((member) => ({
     label: member.name,
@@ -59,7 +59,7 @@ export default function CreateTaskModal({
         assigneeId: values.assigneeId,
         dueDate: values.dueDate.format("YYYY-MM-DD"),
       };
-      const task = await createProjectTask(projectId, request);
+      const task = await createTask(projectId, request);
       onCreated(task);
       form.resetFields();
       onClose();
