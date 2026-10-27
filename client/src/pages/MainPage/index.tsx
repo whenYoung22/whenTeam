@@ -9,7 +9,7 @@ import Footer from "@/components/common/Footer";
 
 import useProjectList from "@/hooks/useProjectList";
 
-import { getCurrentUser } from "@/api/auth";
+import { getCurrentUser } from "@/api/user";
 import { clearAuthToken } from "@/utils/authToken";
 
 import type { ProjectListItem, User } from "@shared/index";

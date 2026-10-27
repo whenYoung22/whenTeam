@@ -1,8 +1,12 @@
-import { DatePicker, Form, Input, message, Modal, Select } from "antd";
+import { Alert, DatePicker, Form, Input, message, Modal, Select } from "antd";
 import type { Dayjs } from "dayjs";
-import type { CreateProjectRequest, ProjectDetailResponse, UserSummary } from "@shared/index";
+import type {
+  CreateProjectRequest,
+  ProjectDetailResponse,
+} from "@shared/index";
 
 import useProjectMutations from "@/hooks/useProjectMutations";
+import useUserDirectory from "@/hooks/useUserDirectory";
 
 interface ProjectFormValues {
   name: string;
@@ -13,21 +17,25 @@ interface ProjectFormValues {
 
 interface CreateProjectModalProps {
   open: boolean;
-  collaborators: UserSummary[];
   onClose: () => void;
   onCreated: (project: ProjectDetailResponse) => Promise<void>;
 }
 
 export default function CreateProjectModal({
   open,
-  collaborators,
   onClose,
   onCreated,
 }: CreateProjectModalProps) {
   const [form] = Form.useForm<ProjectFormValues>();
   const { createProject, isPending } = useProjectMutations();
+  const {
+    users,
+    loading: usersLoading,
+    error: usersError,
+    retry,
+  } = useUserDirectory(open);
 
-  const memberOptions = collaborators.map((user) => ({
+  const memberOptions = users.map((user) => ({
     label: user.name,
     value: user.id,
   }));
@@ -102,16 +110,32 @@ export default function CreateProjectModal({
           />
         </Form.Item>
 
-        <Form.Item
-          name="memberIds"
-          label="项目成员"
-        >
-          <Select
-            mode="multiple"
-            placeholder="可选：添加项目成员"
-            options={memberOptions}
-            maxTagCount="responsive" // 选中多了自动折叠成 +N
-          />
+        <Form.Item label="项目成员" extra="项目创建者会自动加入此项目中">
+          {usersError && (
+            <Alert
+              type="error"
+              showIcon
+              title="用户列表加载失败"
+              description={usersError}
+              action={
+                <button type="button" onClick={retry}>
+                  重试
+                </button>
+              }
+              style={{ marginBottom: 8 }}
+            />
+          )}
+          <Form.Item name="memberIds" noStyle>
+            <Select
+              mode="multiple"
+              placeholder="可选：添加项目成员"
+              options={memberOptions}
+              loading={usersLoading}
+              disabled={usersLoading || Boolean(usersError)}
+              showSearch={{ optionFilterProp: "label" }}
+              maxTagCount="responsive" // 选中多了自动折叠成 +N
+            />
+          </Form.Item>
         </Form.Item>
 
         <Form.Item
@@ -119,10 +143,7 @@ export default function CreateProjectModal({
           label="截止日期"
           rules={[{ required: true, message: "请选择截止日期" }]}
         >
-          <DatePicker
-            placeholder="请选择截止日期"
-            style={{ width: "100%" }}
-          />
+          <DatePicker placeholder="请选择截止日期" style={{ width: "100%" }} />
         </Form.Item>
       </Form>
     </Modal>

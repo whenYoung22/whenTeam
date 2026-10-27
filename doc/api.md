@@ -50,7 +50,8 @@
 | GET | `/api/health` | 检查服务是否启动 |
 | POST | `/api/auth/register` | 创建用户并登录 |
 | POST | `/api/auth/login` | 用户名和密码登录 |
-| GET | `/api/auth/me` | 获取当前登录用户 |
+| GET | `/api/me` | 获取当前登录用户 |
+| GET | `/api/users` | 查询可公开展示的用户列表 |
 | GET | `/api/projects` | 查询当前用户参与的项目 |
 | GET | `/api/projects/overview` | 查询当前用户的项目总览 |
 | GET | `/api/projects/:projectId` | 查询项目详情 |
@@ -123,7 +124,7 @@
 
 ### 4.3 获取当前用户
 
-`GET /api/auth/me`
+`GET /api/me`
 
 请求头需要包含登录接口返回的 JWT：
 
@@ -133,7 +134,30 @@ Authorization: Bearer <JWT>
 
 返回当前用户公开信息，不包含密码哈希。缺少、无效或过期的 token 返回 HTTP 401。
 
-### 4.4 健康检查
+### 4.4 查询用户列表
+
+`GET /api/users`
+
+需要携带有效的登录 JWT。返回所有已注册用户的公开信息，按用户名升序排列；每个用户仅包含 `id`、`name` 和可选的 `avatarUrl`，不包含密码哈希。
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "dev-user"
+    },
+    {
+      "id": 2,
+      "name": "new-user",
+      "avatarUrl": "https://example.com/avatar.png"
+    }
+  ]
+}
+```
+
+### 4.5 健康检查
 
 `GET /api/health`
 
@@ -148,7 +172,7 @@ Authorization: Bearer <JWT>
 }
 ```
 
-### 4.4 查询项目列表
+### 4.6 查询项目列表
 
 `GET /api/projects`
 
@@ -174,7 +198,7 @@ Authorization: Bearer <JWT>
 
 没有项目时 `data` 是空数组。
 
-### 4.5 查询项目总览
+### 4.7 查询项目总览
 
 `GET /api/projects/overview`
 
@@ -207,7 +231,7 @@ Authorization: Bearer <JWT>
 - `collaborators`：当前用户所有项目中的去重成员，包含当前用户。没有头像的用户不返回 `avatarUrl`。
 - `collaboratorCount`：去重后的成员数量。
 
-### 4.6 查询项目详情
+### 4.8 查询项目详情
 
 `GET /api/projects/:projectId`
 
@@ -246,7 +270,7 @@ Authorization: Bearer <JWT>
 
 `progress` 是已完成任务（状态为 `DONE`）占全部任务的百分比，四舍五入为整数；没有任务时为 `0`。`description` 没有内容时返回空字符串。
 
-### 4.7 查询项目任务列表
+### 4.9 查询项目任务列表
 
 `GET /api/projects/:projectId/tasks`
 
@@ -281,7 +305,7 @@ Authorization: Bearer <JWT>
 
 项目没有任务时，`data` 返回空数组。
 
-### 4.8 创建项目任务
+### 4.10 创建项目任务
 
 `POST /api/projects/:projectId/tasks`
 
@@ -344,7 +368,7 @@ Authorization: Bearer <JWT>
 
 
 
-### 4.9 更新项目任务
+### 4.11 更新项目任务
 
 `PATCH /api/tasks/:taskId`
 
@@ -380,7 +404,7 @@ export interface UpdateTaskRequest {
 
 
 
-### 4.10 创建项目
+### 4.12 创建项目
 
 `POST /api/projects`
 
@@ -400,7 +424,7 @@ export interface UpdateTaskRequest {
 - `name`：去除首尾空格后不能为空，最多 100 个字符。
 - `description`：可省略，最多 5000 个字符。
 - `dueDate`：必须是有效的 `YYYY-MM-DD` 日期。
-- `memberIds`：可为空数组，或最多 100 个正整数 ID。重复 ID 会被去重；创建者由服务端自动加入项目，因此无需在数组中指定创建者。
+- `memberIds`：可为空数组，或最多 100 个正整数 ID。重复 ID 会被去重；创建者由服务端自动加入项目。前端仍提供创建者作为可选成员，让创建者身份及其成员关系清晰可见。
 - 多传未定义字段会校验失败。
 
 成功时返回 HTTP 201，`data` 是完整的项目详情，结构同“查询项目详情”。
@@ -412,7 +436,7 @@ export interface UpdateTaskRequest {
 | 请求体格式或字段不合法 | 400 | `VALIDATION_ERROR` |
 | 有成员 ID 不存在 | 400 | `MEMBER_NOT_FOUND` |
 
-### 4.11 更新项目
+### 4.13 更新项目
 
 `PATCH /api/projects/:projectId`
 
@@ -454,10 +478,10 @@ export interface UpdateTaskRequest {
 
 建议先使用 Postman 或 Thunder Client 建立请求，并设置 `Content-Type: application/json`。先测成功流程，再测校验和权限边界。
 
-1. **注册成功**：调用 `POST /api/auth/register`，确认返回 HTTP 201、用户信息和 token；用 token 调用 `GET /api/auth/me` 确认注册后已登录。
+1. **注册成功**：调用 `POST /api/auth/register`，确认返回 HTTP 201、用户信息和 token；用 token 调用 `GET /api/me` 确认注册后已登录。
 2. **注册校验**：分别测试重复用户名（HTTP 409、`USERNAME_TAKEN`）、少于 8 个字符的密码、超过 72 字节的密码、空用户名和额外字段（无效输入应返回 HTTP 400）。
 3. **登录**：调用 `POST /api/auth/login`，确认返回用户信息和 token；错误密码应返回 HTTP 401。
-4. **当前用户**：用登录返回的 token 调用 `GET /api/auth/me`，确认响应中只有公开用户信息。
+4. **当前用户与用户目录**：用登录返回的 token 调用 `GET /api/me` 和 `GET /api/users`，确认用户目录返回所有用户的公开信息，不包含密码哈希。
 5. **认证边界**：不带 token 或使用无效/过期 token 调用项目接口，预期 HTTP 401。
 6. **健康检查**：调用 `GET /api/health`，确认服务可连接。
 7. **列表与总览**：携带 `Authorization: Bearer <JWT>` 调用 `GET /api/projects` 和 `GET /api/projects/overview`，确认响应字段、空数组和统计值符合数据库数据。

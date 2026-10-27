@@ -94,7 +94,6 @@ export default function ProjectOverviewPage() {
       )}
       <CreateProjectModal
         open={createProjectOpen}
-        collaborators={overview?.collaborators ?? []}
         onClose={() => setCreateProjectOpen(false)}
         onCreated={handleProjectCreated}
       />

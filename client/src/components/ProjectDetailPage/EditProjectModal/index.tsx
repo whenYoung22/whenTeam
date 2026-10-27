@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { DatePicker, Form, Input, message, Modal, Select } from "antd";
+import { Alert, DatePicker, Form, Input, message, Modal, Select } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import type { ProjectDetailResponse, UpdateProjectRequest } from "@shared/index";
 import useProjectMutations from "@/hooks/useProjectMutations";
+import useUserDirectory from "@/hooks/useUserDirectory";
 
 interface ProjectFormValues {
   name: string;
@@ -26,9 +27,11 @@ export default function EditProjectModal({
 }: EditProjectModalProps) {
   const [form] = Form.useForm<ProjectFormValues>();
   const { updateProject, isPending } = useProjectMutations();
-  const memberOptions = project.members.map((member) => ({
-    label: member.name,
-    value: member.id,
+  const { users, loading: usersLoading, error: usersError, retry } =
+    useUserDirectory(open);
+  const memberOptions = users.map((user) => ({
+    label: user.name,
+    value: user.id,
   }));
 
   useEffect(() => {
@@ -106,13 +109,35 @@ export default function EditProjectModal({
           />
         </Form.Item>
 
-        <Form.Item name="memberIds" label="项目成员">
-          <Select
-            mode="multiple"
-            placeholder="请选择项目成员"
-            options={memberOptions}
-            maxTagCount="responsive"
-          />
+        <Form.Item
+          label="项目成员"
+          extra="项目创建者始终是项目成员；即使取消选择，保存后也会保留。"
+        >
+          {usersError && (
+            <Alert
+              type="error"
+              showIcon
+              title="用户列表加载失败"
+              description={usersError}
+              action={
+                <button type="button" onClick={retry}>
+                  重试
+                </button>
+              }
+              style={{ marginBottom: 8 }}
+            />
+          )}
+          <Form.Item name="memberIds" noStyle>
+            <Select
+              mode="multiple"
+              placeholder="请选择项目成员"
+              options={memberOptions}
+              loading={usersLoading}
+              disabled={usersLoading || Boolean(usersError)}
+              showSearch={{ optionFilterProp: 'label' }} 
+              maxTagCount="responsive"
+            />
+          </Form.Item>
         </Form.Item>
 
         <Form.Item

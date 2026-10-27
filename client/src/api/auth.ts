@@ -4,7 +4,6 @@ import type {
   LoginResponse,
   RegisterRequest,
   RegisterResponse,
-  User,
 } from "@shared/index";
 import apiClient from "@/service/apiClient";
 
@@ -26,12 +25,5 @@ export async function register(
     "/api/auth/register",
     request,
   );
-  return response.data.data;
-}
-
-// 获取当前登录的用户
-export async function getCurrentUser(): Promise<User> {
-  const response =
-    await apiClient.get<ApiSuccessResponse<User>>("/api/auth/me");
   return response.data.data;
 }

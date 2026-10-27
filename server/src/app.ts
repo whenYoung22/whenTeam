@@ -35,8 +35,8 @@ app.use("/api/auth", authRoutes);
 // 对以下所有路由 鉴权
 app.use("/api", authMiddleware);
 
-// 查询用户
-app.use("/api/auth", userRoutes);
+// 用户查询接口
+app.use("/api", userRoutes);
 
 // 项目
 app.use("/api/projects", projectRoutes);

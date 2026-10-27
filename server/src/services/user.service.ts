@@ -1,4 +1,4 @@
-import type { User } from "../../../shared/index.js";
+import type { User, UserSummary } from "../../../shared/index.js";
 
 import { prisma } from "../lib/prisma.js";
 
@@ -28,4 +28,13 @@ export async function getCurrentUser(userId: number): Promise<User> {
   }
 
   return toUser(user);
+}
+
+export async function getUsers(): Promise<UserSummary[]> {
+  const users = await prisma.user.findMany({
+    select: { id: true, name: true, avatarUrl: true },
+    orderBy: { name: "asc" },
+  });
+
+  return users.map(toUser);
 }
