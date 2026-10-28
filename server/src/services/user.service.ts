@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js";
 
 import { AppError } from "../utils/AppError.util.js";
 
+// 返回给用户的格式
 function toUser(user: {
   id: number;
   name: string;
@@ -16,7 +17,7 @@ function toUser(user: {
   };
 }
 
-
+// 获取当前登录用户
 export async function getCurrentUser(userId: number): Promise<User> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -30,6 +31,7 @@ export async function getCurrentUser(userId: number): Promise<User> {
   return toUser(user);
 }
 
+// 获取所有用户
 export async function getUsers(): Promise<UserSummary[]> {
   const users = await prisma.user.findMany({
     select: { id: true, name: true, avatarUrl: true },

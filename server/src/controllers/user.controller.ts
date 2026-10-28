@@ -19,6 +19,7 @@ export const getCurrentUserController: RequestHandler = async (
   }
 };
 
+// 获取所有用户
 export const getUsersController: RequestHandler = async (_req, res, next) => {
   try {
     const users = await getUsers();

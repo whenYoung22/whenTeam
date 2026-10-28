@@ -36,19 +36,57 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="login-brand">
-          <div className="login-logo">W</div>
-          <Title level={2} className="login-title">
-            whenTeam
-          </Title>
-          <Text className="login-subtitle">
-            团队协作，让每个任务井然有序
-          </Text>
-        </div>
+      <svg
+        className="login-fish"
+        viewBox="0 0 220 140"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M47 70c22-28 62-39 99-26 14 5 25 14 34 26-9 12-20 21-34 26-37 13-77 2-99-26Z"
+          fill="#fff"
+          fillOpacity=".72"
+          stroke="#7067ef"
+          strokeOpacity=".42"
+          strokeWidth="3"
+        />
+        <path
+          d="m48 70-32-25 8 25-8 25 32-25Z"
+          fill="#7067ef"
+          fillOpacity=".2"
+          stroke="#7067ef"
+          strokeOpacity=".42"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M105 48c7 9 10 16 10 22s-3 13-10 22c18-4 30-12 38-22-8-10-20-18-38-22Z"
+          fill="#43c4be"
+          fillOpacity=".2"
+        />
+        <circle cx="158" cy="64" r="3.5" fill="#48558c" fillOpacity=".65" />
+        <path
+          d="M168 77c-5 5-11 7-17 7"
+          stroke="#48558c"
+          strokeOpacity=".45"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle cx="193" cy="40" r="5" stroke="#43c4be" strokeOpacity=".55" strokeWidth="2" />
+        <circle cx="208" cy="25" r="3" stroke="#43c4be" strokeOpacity=".45" strokeWidth="2" />
+      </svg>
 
+      <div className="login-watermarks" aria-hidden="true">
+        <span className="login-watermark-title">whenTeam</span>
+        <span className="login-watermark-subtitle">
+          团队协作，让每个任务井然有序
+        </span>
+      </div>
+
+      <div className="login-card">
+        <div className="login-logo">W</div>
         <div className="login-form-header">
-          <Title level={4}>欢迎回来</Title>
+          <Title level={3}>欢迎回来</Title>
           <Text type="secondary">登录你的账号以继续使用</Text>
         </div>
 

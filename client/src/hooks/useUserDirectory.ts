@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import type { UserSummary } from "@shared/index";
 import { getUsers } from "@/api/user";
 
+
+// 获取所有注册的用户 在添加/编辑项目时用
 export default function useUserDirectory(enabled: boolean) {
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
