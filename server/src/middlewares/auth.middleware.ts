@@ -2,7 +2,7 @@ import type { RequestHandler } from "express";
 
 import { errors } from "jose";
 
-import { verifyAccessToken } from "../utils/auth-token.util.js";
+import { verifyAccessToken } from "../utils/access-token.util.js";
 import { AppError } from "../utils/AppError.util.js";
 
 // 鉴权中间件

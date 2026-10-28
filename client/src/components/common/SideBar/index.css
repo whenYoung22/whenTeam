@@ -19,6 +19,7 @@
   height: 76px;
   padding: 0 22px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .sidebar-logo {

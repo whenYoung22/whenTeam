@@ -5,6 +5,7 @@ import { Button, Form, Input, Typography, message } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 
 import { register } from "@/api/auth";
+import { setAuthToken } from "@/utils/authToken";
 
 import "../LoginPage/index.css";
 
@@ -24,12 +25,13 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register({
+      const result = await register({
         name: values.name,
         password: values.password,
       });
-      message.success("注册成功，请登录");
-      navigate("/login", { replace: true });
+      setAuthToken(result.token);
+      message.success("注册成功");
+      navigate("/", { replace: true });
     } catch (error) {
       message.error(error instanceof Error ? error.message : "注册失败，请稍后重试");
     } finally {

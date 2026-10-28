@@ -12,23 +12,35 @@ import { errorMiddleware } from "./middlewares/error.middlerware.js";
 
 const app = express();
 
+const clientOrigins = (
+  process.env.CLIENT_ORIGINS ??
+  "http://localhost:5173,http://localhost:5174"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-// 配置跨域 目前是*
-app.use(cors({ origin: "*" }));
+if (clientOrigins.length === 0) {
+  throw new Error("CLIENT_ORIGINS must contain at least one allowed origin");
+}
 
+app.use(cors({ origin: clientOrigins, credentials: true }));
 
 app.use(express.json());
 
-// 临时健康检查接口
-app.get("/api/health", (_req, res) => {
-  res.json({
-    success: true,
-    message: "whenTeam server is running",
+// 全局请求日志
+app.use((req, res, next) => {
+  const startedAt = Date.now();
+  res.on("finish", () => {
+    console.log(
+      `[HTTP] ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - startedAt}ms`,
+    );
   });
+  next();
 });
 
 
-// 注册和登录不需要走鉴权中间件，需要最先注册
+/*****注册和登录不需要走鉴权中间件，需要最先注册⚠️*********/
 app.use("/api/auth", authRoutes);
 
 

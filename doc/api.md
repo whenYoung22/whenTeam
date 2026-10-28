@@ -6,7 +6,8 @@
 
 ## 1. 启动服务
 
-1. 确认数据库服务已启动，Prisma 数据库结构已同步，并且用于测试的用户记录已存在。
+1. 确认数据库服务已启动，并在 `server` 目录执行 `npx prisma migrate dev --schema prisma` 应用迁移；如需开发测试账户，再运行 `npm run seed:dev-user --prefix server`。
+   首次使用或拉取新增迁移后，在 `server` 目录运行 `npx prisma migrate dev --schema prisma` 应用数据库迁移。
 2. 在 `server/.env` 中配置数据库连接、JWT 签名密钥和本地开发用户密码：
 
    ```env
@@ -17,7 +18,7 @@
    CLIENT_ORIGINS="http://localhost:5173"
    ```
 
-   可使用 `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"` 生成 `AUTH_JWT_SECRET`。不要将真实密钥或密码提交到 Git。首次准备本地开发用户时，在 PowerShell 中运行 `npm run seed:dev-user --prefix server`；该命令会创建或重置用户名为 `dev-user` 的账户密码。`CLIENT_ORIGINS` 是允许跨域访问 API 的前端 origin 列表，多个 origin 用逗号分隔，例如 `http://localhost:5173,https://app.example.com`。默认允许 Vite 本地开发 origin `http://localhost:5173`。
+   可使用 `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"` 生成 `AUTH_JWT_SECRET`。不要将真实密钥或密码提交到 Git。首次准备本地开发用户时，在 PowerShell 中运行 `npm run seed:dev-user --prefix server`；该命令会创建或重置用户名为 `dev-user` 的账户密码。`CLIENT_ORIGINS` 是允许跨域访问 API 的前端 origin 列表，多个 origin 用逗号分隔，例如 `http://localhost:5173,https://app.example.com`。未配置时默认允许 Vite 本地开发 origin `http://localhost:5173` 和 `http://localhost:5174`。
 3. 在 `client/.env` 中配置前端 API 地址：
 
    ```env
@@ -40,8 +41,10 @@
 - 统一错误中间件响应使用 `{ "error": { "code": "...", "message": "..." } }`。
 - 日期使用 `YYYY-MM-DD`；时间戳使用 UTC ISO 8601 格式。
 - 项目 ID 和成员 ID 都是数据库中的数字 ID。
-- 登录成功后服务端签发有效期为 1 小时的 JWT；项目和任务接口必须在 `Authorization: Bearer <token>` 请求头中携带 token。
-- API 使用 Express CORS 中间件允许 `CLIENT_ORIGINS` 中的前端 origin；本地前端直接连接后端，不通过 Vite 代理。
+- 登录或注册成功后服务端签发 15 分钟有效期的 Access Token，并通过 HttpOnly Cookie 设置有效期为 7 天的 Refresh Token。
+- 项目和任务接口必须在 `Authorization: Bearer <Access Token>` 请求头中携带令牌；浏览器请求会自动携带 Refresh Token Cookie。
+- Refresh Token 仅以 SHA-256 哈希保存在服务端；每次刷新都会轮换，旧 Token 重放会撤销该登录会话族。
+- API 使用带凭证的 CORS，仅允许 `CLIENT_ORIGINS` 中列出的前端 origin；本地前端直接连接后端，不通过 Vite 代理。
 
 ## 3. 接口列表
 
@@ -50,6 +53,8 @@
 | GET | `/api/health` | 检查服务是否启动 |
 | POST | `/api/auth/register` | 创建用户并登录 |
 | POST | `/api/auth/login` | 用户名和密码登录 |
+| POST | `/api/auth/refresh` | 轮换 Refresh Token 并获取新的 Access Token |
+| POST | `/api/auth/logout` | 撤销当前登录会话 |
 | GET | `/api/me` | 获取当前登录用户 |
 | GET | `/api/users` | 查询可公开展示的用户列表 |
 | GET | `/api/projects` | 查询当前用户参与的项目 |
@@ -75,7 +80,7 @@
 }
 ```
 
-用户名去除首尾空格后不能为空，且最多 100 个字符；密码至少 8 个字符，UTF-8 编码长度不能超过 72 个字节。成功时返回 HTTP 201，响应包含公开用户信息和 1 小时有效期的 JWT，可直接用于访问需登录的接口。
+用户名去除首尾空格后不能为空，且最多 100 个字符；密码至少 8 个字符，UTF-8 编码长度不能超过 72 个字节。成功时返回 HTTP 201，响应包含公开用户信息和 15 分钟有效期的 Access Token，并在 HttpOnly Cookie 中设置 Refresh Token。客户端可直接进入已登录状态。
 
 ```json
 {
@@ -105,7 +110,7 @@
 }
 ```
 
-成功响应（HTTP 200）中的 `data` 包含公开用户信息和 1 小时有效期的 JWT。密码哈希不会出现在响应中。
+成功响应（HTTP 200）中的 `data` 包含公开用户信息和 15 分钟有效期的 Access Token，并通过 HttpOnly Cookie 设置 Refresh Token。密码哈希不会出现在响应中。
 
 ```json
 {
@@ -122,7 +127,32 @@
 
 用户名或密码错误时返回 HTTP 401 和 `INVALID_CREDENTIALS`。请求体格式错误时返回 HTTP 400。
 
-### 4.3 获取当前用户
+### 4.3 刷新令牌
+
+`POST /api/auth/refresh`
+
+浏览器自动携带登录或注册时设置的 `whenteam.refreshToken` Cookie。成功时服务端撤销旧 Refresh Token、签发新的 Refresh Token 并更新 Cookie，响应体只返回新的 15 分钟 Access Token：
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "<新的 Access Token>"
+  }
+}
+```
+
+Refresh Token 有效期为登录后 7 天，刷新时不会延长这个会话的绝对过期时间。缺少、过期、已撤销或已被轮换的 Refresh Token 返回 HTTP 401 和 `INVALID_REFRESH_TOKEN`。重放已轮换的 Token 会撤销同一登录会话族中的有效 Token。
+
+Cookie 使用 `HttpOnly`、`SameSite=Lax` 和 `/api/auth` 路径；生产环境还会设置 `Secure`。Refresh Token 原文不会出现在 JSON 响应中。
+
+### 4.4 登出
+
+`POST /api/auth/logout`
+
+浏览器自动携带 Refresh Token Cookie。服务端撤销对应登录会话族，并清除 Cookie。成功时返回 `{ "success": true, "data": { "loggedOut": true } }`。登出不会立即吊销已经签发的 Access Token；它最多可在剩余的 15 分钟内继续通过 JWT 验证。
+
+### 4.5 获取当前用户
 
 `GET /api/me`
 
@@ -134,7 +164,7 @@ Authorization: Bearer <JWT>
 
 返回当前用户公开信息，不包含密码哈希。缺少、无效或过期的 token 返回 HTTP 401。
 
-### 4.4 查询用户列表
+### 4.6 查询用户列表
 
 `GET /api/users`
 
@@ -480,9 +510,11 @@ export interface UpdateTaskRequest {
 
 1. **注册成功**：调用 `POST /api/auth/register`，确认返回 HTTP 201、用户信息和 token；用 token 调用 `GET /api/me` 确认注册后已登录。
 2. **注册校验**：分别测试重复用户名（HTTP 409、`USERNAME_TAKEN`）、少于 8 个字符的密码、超过 72 字节的密码、空用户名和额外字段（无效输入应返回 HTTP 400）。
-3. **登录**：调用 `POST /api/auth/login`，确认返回用户信息和 token；错误密码应返回 HTTP 401。
-4. **当前用户与用户目录**：用登录返回的 token 调用 `GET /api/me` 和 `GET /api/users`，确认用户目录返回所有用户的公开信息，不包含密码哈希。
-5. **认证边界**：不带 token 或使用无效/过期 token 调用项目接口，预期 HTTP 401。
+3. **登录**：调用 `POST /api/auth/login`，确认返回用户信息和 Access Token；错误密码应返回 HTTP 401。
+   - **刷新令牌**：浏览器自动携带登录时设置的 `whenteam.refreshToken` Cookie。调用 `POST /api/auth/refresh`，确认返回新的 Access Token 且 Cookie 被轮换；之后重放旧 Cookie，应返回 401 并使该会话族失效。
+   - **登出**：重新登录后调用 `POST /api/auth/logout`，确认 Cookie 被清除，之后用该 Refresh Token 调用刷新接口应返回 401。已签发的 Access Token 仍可能在剩余有效期内使用。
+4. **当前用户与用户目录**：用登录返回的 Access Token 调用 `GET /api/me` 和 `GET /api/users`，确认用户目录返回所有用户的公开信息，不包含密码哈希。
+5. **认证边界**：不带 Access Token 或使用无效/过期 Access Token 调用项目接口，预期 HTTP 401；浏览器端过期时应自动刷新并重试一次。
 6. **健康检查**：调用 `GET /api/health`，确认服务可连接。
 7. **列表与总览**：携带 `Authorization: Bearer <JWT>` 调用 `GET /api/projects` 和 `GET /api/projects/overview`，确认响应字段、空数组和统计值符合数据库数据。
 8. **创建项目成功**：用一个有效且不同于当前登录用户的成员 ID 创建项目，记录响应中的项目 ID。

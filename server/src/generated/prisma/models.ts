@@ -8,6 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/AuthSession.js'
 export type * from './models/ProjectFavorite.js'
 export type * from './models/Project.js'
 export type * from './models/ProjectMember.js'

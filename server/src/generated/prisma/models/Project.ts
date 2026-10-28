@@ -455,16 +455,8 @@ export type ProjectUpdateOneRequiredWithoutFavoritesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutFavoritesInput, Prisma.ProjectUpdateWithoutFavoritesInput>, Prisma.ProjectUncheckedUpdateWithoutFavoritesInput>
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
-}
-
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
-}
-
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
 }
 
 export type ProjectCreateNestedOneWithoutMembersInput = {

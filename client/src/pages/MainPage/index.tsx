@@ -10,6 +10,7 @@ import Footer from "@/components/common/Footer";
 import useProjectList from "@/hooks/useProjectList";
 
 import { getCurrentUser } from "@/api/user";
+import { logout } from "@/api/auth";
 import { clearAuthToken } from "@/utils/authToken";
 
 import type { ProjectListItem, User } from "@shared/index";
@@ -68,9 +69,18 @@ export default function MainPage() {
     message.info("通知功能暂未实现");
   };
 
-  const handleLogout = () => {
-    clearAuthToken();
-    navigate("/login", { replace: true });
+  const handleLogout = async () => {
+    try {
+      await logout();
+      clearAuthToken();
+      navigate("/login", { replace: true });
+    } catch (logoutError) {
+      message.error(
+        logoutError instanceof Error
+          ? logoutError.message
+          : "退出登录失败，请稍后重试",
+      );
+    }
   };
 
   return (

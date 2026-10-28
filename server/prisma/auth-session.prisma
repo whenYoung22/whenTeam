@@ -1,0 +1,15 @@
+model AuthSession {
+  id        String    @id @default(cuid()) @db.VarChar(30)
+  userId    Int
+  familyId  String    @db.Char(36)
+  tokenHash String    @unique @db.Char(64)
+  expiresAt DateTime  @db.DateTime(3)
+  revokedAt DateTime? @db.DateTime(3)
+  createdAt DateTime  @default(now()) @db.DateTime(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+}

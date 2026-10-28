@@ -27,3 +27,7 @@ export async function register(
   );
   return response.data.data;
 }
+
+export async function logout(): Promise<void> {
+  await apiClient.post("/api/auth/logout");
+}

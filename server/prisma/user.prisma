@@ -12,4 +12,5 @@ model User {
   memberships    ProjectMember[]
   favorites      ProjectFavorite[]
   assignedTasks  Task[]            @relation("TaskAssignee")
+  authSessions   AuthSession[]
 }

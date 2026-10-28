@@ -1,3 +1,5 @@
+// 签发和验证 Access Token（JWT），包括设置有效期、签名和检查声明
+
 import { SignJWT, jwtVerify } from "jose";
 import { AppError } from "./AppError.util.js";
 
@@ -15,7 +17,7 @@ export function getAuthSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-// 签发token
+// 签发AccessToken
 export async function createAccessToken(userId: number): Promise<string> {
   return new SignJWT({})
     .setProtectedHeader({ alg: "HS256" })
@@ -23,11 +25,12 @@ export async function createAccessToken(userId: number): Promise<string> {
     .setIssuer(issuer)
     .setAudience(audience)
     .setIssuedAt()
-    .setExpirationTime("1h")
+    .setExpirationTime("15m")
+    // .setExpirationTime("5s")
     .sign(getAuthSecret());
 }
 
-// 验证token
+// 验证AccessToken
 export async function verifyAccessToken(token: string): Promise<number> {
   const { payload } = await jwtVerify(token, getAuthSecret(), {
     algorithms: ["HS256"],

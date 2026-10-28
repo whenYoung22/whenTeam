@@ -11,7 +11,7 @@ import { Prisma } from "../generated/prisma/client.js";
 import type { RegisterInput } from "../validations/auth.validation.js";
 
 import { AppError } from "../utils/AppError.util.js";
-import { createAccessToken } from "../utils/auth-token.util.js";
+import { createAuthSession } from "./refresh-token-session.service.js";
 
 // 返回给用户的格式
 function toUser(user: {
@@ -28,7 +28,9 @@ function toUser(user: {
 
 
 // 用户注册
-export async function register(input: RegisterInput): Promise<RegisterResponse> {
+export async function register(
+  input: RegisterInput,
+): Promise<RegisterResponse & { refreshToken: string }> {
   const passwordHash = await hash(input.password, 12);
 
   let user;
@@ -54,8 +56,10 @@ export async function register(input: RegisterInput): Promise<RegisterResponse> 
     throw error;
   }
 
+  const session = await createAuthSession(user.id);
   return {
     user: toUser(user),
-    token: await createAccessToken(user.id),
+    token: session.accessToken,
+    refreshToken: session.refreshToken,
   };
 }

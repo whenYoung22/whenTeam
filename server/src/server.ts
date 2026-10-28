@@ -3,7 +3,7 @@
 
 import "dotenv/config";
 import app from "./app.js";
-import { getAuthSecret } from "./utils/auth-token.util.js";
+import { getAuthSecret } from "./utils/access-token.util.js";
 
 const PORT = Number(process.env.PORT) || 3000;
 
