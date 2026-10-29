@@ -58,6 +58,7 @@ function getTaskMetrics(tasks: { status: string }[]) {
 // 将 Prisma 查询结果转换为 shared 契约，并把数据库日期序列化为接口格式。
 function toProjectDetailResponse(
   project: ProjectWithDetails,
+  isFavorite = false,
 ): ProjectDetailResponse {
   const { taskCount, progress } = getTaskMetrics(project.tasks);
 
@@ -70,7 +71,7 @@ function toProjectDetailResponse(
     dueDate: project.dueDate.toISOString().slice(0, 10),
     progress,
     taskCount,
-    isFavorite: false,
+    isFavorite,
     members: project.members.map(({ user }) => toUserSummary(user)),
   };
 }
@@ -102,6 +103,10 @@ export async function getProjects(userId: number): Promise<ProjectListItem[]> {
       tasks: {
         select: { status: true },
       },
+      favorites: {
+        where: { userId },
+        select: { projectId: true },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -117,7 +122,7 @@ export async function getProjects(userId: number): Promise<ProjectListItem[]> {
       color: project.color,
       progress,
       taskCount,
-      isFavorite: false,
+      isFavorite: project.favorites.length > 0,
     };
   });
 }
@@ -141,7 +146,47 @@ export async function getProject(
     throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
   }
 
-  return toProjectDetailResponse(project);
+  const favorite = await prisma.projectFavorite.findUnique({
+    where: {
+      projectId_userId: { projectId, userId },
+    },
+    select: { projectId: true },
+  });
+
+  return toProjectDetailResponse(project, favorite !== null);
+}
+
+/** 设置当前用户对项目的收藏状态；只有项目成员可以操作。 */
+export async function setProjectFavorite(
+  userId: number,
+  projectId: number,
+  isFavorite: boolean,
+): Promise<void> {
+  const membership = await prisma.projectMember.findUnique({
+    where: {
+      projectId_userId: { projectId, userId },
+    },
+    select: { projectId: true },
+  });
+
+  if (!membership) {
+    throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+  }
+
+  if (isFavorite) {
+    await prisma.projectFavorite.upsert({
+      where: {
+        projectId_userId: { projectId, userId },
+      },
+      create: { projectId, userId },
+      update: {},
+    });
+    return;
+  }
+
+  await prisma.projectFavorite.deleteMany({
+    where: { projectId, userId },
+  });
 }
 
 /**
@@ -323,7 +368,14 @@ export async function updateProject(
       );
     }
 
-    return toProjectDetailResponse(project);
+    const favorite = await tx.projectFavorite.findUnique({
+      where: {
+        projectId_userId: { projectId, userId },
+      },
+      select: { projectId: true },
+    });
+
+    return toProjectDetailResponse(project, favorite !== null);
   });
 }
 

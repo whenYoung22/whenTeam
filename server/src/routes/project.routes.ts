@@ -1,10 +1,12 @@
 import { Router } from "express";
 import {
   createProjectController,
+  favoriteProjectController,
   getProjectController,
   getProjectOverviewController,
   getProjectsController,
   updateProjectController,
+  unfavoriteProjectController,
 } from "../controllers/project.controller.js";
 
 const router = Router();
@@ -18,6 +20,12 @@ router.get("/", getProjectsController);
 
 // POST /api/projects 创建项目
 router.post("/", createProjectController);
+
+// PUT /api/projects/:projectId/favorite
+router.put("/:projectId/favorite", favoriteProjectController);
+
+// DELETE /api/projects/:projectId/favorite
+router.delete("/:projectId/favorite", unfavoriteProjectController);
 
 // GET /api/projects/:projectId 查询项目详情
 router.get("/:projectId", getProjectController);

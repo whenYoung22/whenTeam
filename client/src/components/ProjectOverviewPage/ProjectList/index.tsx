@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Card, Empty, Progress, Segmented } from "antd";
-import { FolderOutlined } from "@ant-design/icons";
+import { Button, Card, Empty, Progress, Segmented } from "antd";
+import { FolderOutlined, StarFilled, StarOutlined } from "@ant-design/icons";
 
 import type { ProjectListItem } from "@shared/index";
 
@@ -11,11 +11,15 @@ type ProjectFilter = "all" | "favorite";
 interface ProjectListProps {
   projects: ProjectListItem[];
   onProjectClick: (project: ProjectListItem) => void;
+  onFavoriteToggle: (project: ProjectListItem) => void;
+  favoritePendingProjectId: number | null;
 }
 
 export default function ProjectList({
   projects,
   onProjectClick,
+  onFavoriteToggle,
+  favoritePendingProjectId,
 }: ProjectListProps) {
   const [filter, setFilter] = useState<ProjectFilter>("all");
 
@@ -52,6 +56,23 @@ export default function ProjectList({
               hoverable
               onClick={() => onProjectClick(project)}
             >
+              <Button
+                type="text"
+                className={`project-card-favorite-button${project.isFavorite ? " is-favorite" : ""}`}
+                icon={project.isFavorite ? <StarFilled /> : <StarOutlined />}
+                aria-label={project.isFavorite ? "取消收藏项目" : "收藏项目"}
+                aria-pressed={project.isFavorite}
+                title={project.isFavorite ? "取消收藏" : "收藏项目"}
+                loading={favoritePendingProjectId === project.id}
+                disabled={
+                  favoritePendingProjectId !== null &&
+                  favoritePendingProjectId !== project.id
+                }
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onFavoriteToggle(project);
+                }}
+              />
               <div className="project-card-icon">
                 <FolderOutlined style={{ color: project.color }} />
               </div>

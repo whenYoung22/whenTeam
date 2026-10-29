@@ -53,3 +53,15 @@ export async function updateProject(
   >(`/api/projects/${projectId}`, request);
   return response.data.data;
 }
+
+// Set whether the current user has favorited a project.
+export async function setProjectFavorite(
+  projectId: number,
+  isFavorite: boolean,
+): Promise<boolean> {
+  const url = `/api/projects/${projectId}/favorite`;
+  const response = isFavorite
+    ? await apiClient.put<ApiSuccessResponse<{ isFavorite: boolean }>>(url)
+    : await apiClient.delete<ApiSuccessResponse<{ isFavorite: boolean }>>(url);
+  return response.data.data.isFavorite;
+}

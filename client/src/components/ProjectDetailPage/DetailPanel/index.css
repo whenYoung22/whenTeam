@@ -23,7 +23,6 @@
 .project-panel-edit-button,
 .project-panel-favorite-button {
   flex-shrink: 0;
-  color: #667085;
   font-size: 20px;
 }
 

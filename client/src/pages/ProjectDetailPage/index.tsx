@@ -9,7 +9,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import { Alert, Button, Empty, Spin } from "antd";
+import { Alert, Button, Empty, message, Spin } from "antd";
 
 import DetailPanel from "@/components/ProjectDetailPage/DetailPanel";
 import TaskList from "@/components/ProjectDetailPage/TaskList";
@@ -17,6 +17,7 @@ import CreateTaskModal from "@/components/ProjectDetailPage/CreateTaskModal";
 import TaskDetailModal from "@/components/ProjectDetailPage/TaskDetailModal";
 
 import useProjectDetailData from "@/hooks/useProjectDetailData";
+import { setProjectFavorite } from "@/api/project";
 
 import type { ProjectDetailResponse,ProjectListItem,TaskResponse } from "@shared/index";
 
@@ -85,6 +86,7 @@ function ProjectDetailContent({
   const [project, setProject] = useState(initialProject);
   const [tasks, setTasks] = useState(initialTasks);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [favoritePending, setFavoritePending] = useState(false);
   const taskIdParam = searchParams.get("taskId");
   const taskId = taskIdParam === null ? null : Number(taskIdParam);
   const selectedTask =
@@ -120,6 +122,28 @@ function ProjectDetailContent({
           : item,
       ),
     );
+  };
+
+  const handleFavoriteToggle = async () => {
+    setFavoritePending(true);
+    try {
+      const isFavorite = await setProjectFavorite(
+        project.id,
+        !project.isFavorite,
+      );
+      setProject((current) => ({ ...current, isFavorite }));
+      setProjects((projects) =>
+        projects.map((item) =>
+          item.id === project.id ? { ...item, isFavorite } : item,
+        ),
+      );
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : "更新收藏状态失败",
+      );
+    } finally {
+      setFavoritePending(false);
+    }
   };
 
   const handleTaskCreated = (task: TaskResponse) => {
@@ -170,7 +194,12 @@ function ProjectDetailContent({
 
   return (
     <section className="project-detail-page">
-      <DetailPanel project={project} onSave={handleSaveProject} />
+      <DetailPanel
+        project={project}
+        onSave={handleSaveProject}
+        onFavoriteToggle={handleFavoriteToggle}
+        favoritePending={favoritePending}
+      />
 
       <TaskList
         tasks={tasks}

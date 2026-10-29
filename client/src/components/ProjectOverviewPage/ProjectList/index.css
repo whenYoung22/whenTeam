@@ -47,7 +47,30 @@
 }
 
 .project-card .ant-card-body {
+  position: relative;
   padding: 24px;
+}
+
+.project-card .ant-btn.project-card-favorite-button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  color: #667085;
+  font-size: 18px;
+}
+
+.project-card .ant-btn.project-card-favorite-button.is-favorite {
+  color: #e4b558;
+}
+
+.project-card .ant-btn.project-card-favorite-button:not(:disabled):not(.ant-btn-disabled):hover {
+  color: #475467;
+  background: #f2f4f7;
+}
+
+.project-card .ant-btn.project-card-favorite-button.is-favorite:not(:disabled):not(.ant-btn-disabled):hover {
+  color: #fab835;
+  background: #f7f4ec;
 }
 
 .project-card-color {

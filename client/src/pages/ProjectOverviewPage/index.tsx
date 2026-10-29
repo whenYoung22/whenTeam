@@ -7,6 +7,7 @@ import ProjectList from "@/components/ProjectOverviewPage/ProjectList";
 import CreateProjectModal from "@/components/ProjectOverviewPage/CreateProjectModal";
 
 import useProjectOverview from "@/hooks/useProjectOverview";
+import { setProjectFavorite } from "@/api/project";
 
 import type {
   ProjectDetailResponse,
@@ -25,6 +26,7 @@ export default function ProjectOverviewPage() {
     useOutletContext<ProjectOutletContext>();
 
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
+  const [favoritePendingProjectId, setFavoritePendingProjectId] = useState<number | null>(null);
   const {
     overview,
     loading: overviewLoading,
@@ -35,6 +37,27 @@ export default function ProjectOverviewPage() {
 
   const handleProjectClick = (project: ProjectListItem) => {
     navigate(`/projects/${project.id}`);
+  };
+
+  const handleFavoriteToggle = async (project: ProjectListItem) => {
+    setFavoritePendingProjectId(project.id);
+    try {
+      const isFavorite = await setProjectFavorite(
+        project.id,
+        !project.isFavorite,
+      );
+      setProjects((current) =>
+        current.map((item) =>
+          item.id === project.id ? { ...item, isFavorite } : item,
+        ),
+      );
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : "更新收藏状态失败",
+      );
+    } finally {
+      setFavoritePendingProjectId(null);
+    }
   };
 
   const handleProjectCreated = async (project: ProjectDetailResponse) => {
@@ -89,7 +112,12 @@ export default function ProjectOverviewPage() {
         </div>
       ) : (
         overview && (
-          <ProjectList projects={projects} onProjectClick={handleProjectClick} />
+          <ProjectList
+            projects={projects}
+            onProjectClick={handleProjectClick}
+            onFavoriteToggle={handleFavoriteToggle}
+            favoritePendingProjectId={favoritePendingProjectId}
+          />
         )
       )}
       <CreateProjectModal

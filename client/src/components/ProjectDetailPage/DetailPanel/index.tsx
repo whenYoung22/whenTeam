@@ -26,22 +26,23 @@ function getMutedProjectColor(color: string): string {
 interface DetailPanelProps {
   project: ProjectDetailResponse;
   onSave: (project: ProjectDetailResponse) => void;
+  onFavoriteToggle: () => void;
+  favoritePending: boolean;
 }
 
-export default function DetailPanel({ project, onSave }: DetailPanelProps) {
+export default function DetailPanel({
+  project,
+  onSave,
+  onFavoriteToggle,
+  favoritePending,
+}: DetailPanelProps) {
   const [editOpen, setEditOpen] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(project.isFavorite);
   const projectAccentColor = getMutedProjectColor(project.color);
 
   const handleSave = (updatedProject: ProjectDetailResponse) => {
     onSave(updatedProject);
     setEditOpen(false);
     message.success("项目已更新");
-  };
-
-  const handleFavoriteToggle = () => {
-    // TODO: Persist the favorite state through the project favorites API.
-    setIsFavorite((favorite) => !favorite);
   };
 
   return (
@@ -64,12 +65,13 @@ export default function DetailPanel({ project, onSave }: DetailPanelProps) {
         <div className="project-panel-actions">
           <Button
             type="text"
-            className={`project-panel-favorite-button${isFavorite ? " is-favorite" : ""}`}
-            icon={isFavorite ? <StarFilled /> : <StarOutlined />}
-            aria-label={isFavorite ? "取消收藏项目" : "收藏项目"}
-            aria-pressed={isFavorite}
-            title={isFavorite ? "取消收藏" : "收藏项目"}
-            onClick={handleFavoriteToggle}
+            className={`project-panel-favorite-button${project.isFavorite ? " is-favorite" : ""}`}
+            icon={project.isFavorite ? <StarFilled /> : <StarOutlined />}
+            aria-label={project.isFavorite ? "取消收藏项目" : "收藏项目"}
+            aria-pressed={project.isFavorite}
+            title={project.isFavorite ? "取消收藏" : "收藏项目"}
+            loading={favoritePending}
+            onClick={onFavoriteToggle}
           />
           <Button
             type="text"

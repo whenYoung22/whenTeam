@@ -2,7 +2,7 @@
 
 ## 
 
-本文档对应当前已经实现的后端接口，适用于 Postman、Thunder Client 等 HTTP 客户端。当前实现健康检查、注册和登录认证、项目接口和项目任务查询/创建接口；任务更新和收藏接口尚未接入。
+本文档对应当前已经实现的后端接口，适用于 Postman、Thunder Client 等 HTTP 客户端。当前实现健康检查、注册和登录认证、项目接口、项目收藏接口和项目任务查询/创建接口；任务更新接口尚未接入。
 
 ## 1. 启动服务
 
@@ -60,6 +60,8 @@
 | GET | `/api/projects` | 查询当前用户参与的项目 |
 | GET | `/api/projects/overview` | 查询当前用户的项目总览 |
 | GET | `/api/projects/:projectId` | 查询项目详情 |
+| PUT | `/api/projects/:projectId/favorite` | 收藏项目 |
+| DELETE | `/api/projects/:projectId/favorite` | 取消收藏项目 |
 | GET | `/api/projects/:projectId/tasks` | 查询项目任务列表 |
 | POST | `/api/projects/:projectId/tasks` | 创建项目任务 |
 | POST | `/api/projects` | 创建项目 |
@@ -206,7 +208,7 @@ Authorization: Bearer <JWT>
 
 `GET /api/projects`
 
-返回当前登录用户作为项目成员的项目，按创建时间倒序排列。每个项目包含 `id`、`name`、`color`、`progress`、`taskCount` 和 `isFavorite`。收藏尚未接入，当前 `isFavorite` 固定为 `false`。
+返回当前登录用户作为项目成员的项目，按创建时间倒序排列。每个项目包含 `id`、`name`、`color`、`progress`、`taskCount` 和 `isFavorite`。`isFavorite` 表示当前登录用户是否收藏该项目。
 
 成功响应（HTTP 200）：
 
@@ -300,7 +302,39 @@ Authorization: Bearer <JWT>
 
 `progress` 是已完成任务（状态为 `DONE`）占全部任务的百分比，四舍五入为整数；没有任务时为 `0`。`description` 没有内容时返回空字符串。
 
-### 4.9 查询项目任务列表
+### 4.9 收藏或取消收藏项目
+
+收藏：
+
+`PUT /api/projects/:projectId/favorite`
+
+取消收藏：
+
+`DELETE /api/projects/:projectId/favorite`
+
+两个请求都不需要请求体。只有项目成员可以修改自己的收藏关系；项目不存在或当前用户不是项目成员时返回 HTTP 404。收藏和取消收藏都是幂等操作，重复请求不会产生重复收藏，也不会影响其他用户对同一项目的收藏。
+
+成功响应（HTTP 200）：
+
+```json
+{
+  "success": true,
+  "data": {
+    "isFavorite": true
+  }
+}
+```
+
+取消收藏时响应中的 `isFavorite` 为 `false`。再次查询项目列表或详情时，该字段会返回当前登录用户实际的收藏状态。
+
+常见失败：
+
+| 情况 | HTTP 状态 | 错误码 |
+| --- | --- | --- |
+| 项目 ID 不是正整数 | 400 | `INVALID_PROJECT_ID` |
+| 项目不存在或当前用户不是成员 | 404 | `PROJECT_NOT_FOUND` |
+
+### 4.10 查询项目任务列表
 
 `GET /api/projects/:projectId/tasks`
 
@@ -335,7 +369,7 @@ Authorization: Bearer <JWT>
 
 项目没有任务时，`data` 返回空数组。
 
-### 4.10 创建项目任务
+### 4.11 创建项目任务
 
 `POST /api/projects/:projectId/tasks`
 
@@ -398,7 +432,7 @@ Authorization: Bearer <JWT>
 
 
 
-### 4.11 更新项目任务
+### 4.12 更新项目任务
 
 `PATCH /api/tasks/:taskId`
 
@@ -434,7 +468,7 @@ export interface UpdateTaskRequest {
 
 
 
-### 4.12 创建项目
+### 4.13 创建项目
 
 `POST /api/projects`
 
@@ -466,7 +500,7 @@ export interface UpdateTaskRequest {
 | 请求体格式或字段不合法 | 400 | `VALIDATION_ERROR` |
 | 有成员 ID 不存在 | 400 | `MEMBER_NOT_FOUND` |
 
-### 4.13 更新项目
+### 4.14 更新项目
 
 `PATCH /api/projects/:projectId`
 
@@ -525,6 +559,9 @@ export interface UpdateTaskRequest {
 13. **创建任务**：项目成员调用 `POST /api/projects/:projectId/tasks`，确认任务状态默认为 `TODO`，任务出现在列表中，项目任务数和进度同步更新。
 14. **任务创建校验**：测试不存在的项目、非项目成员负责人、无效日期，以及晚于项目截止日期的任务截止日期。
 15. **任务列表**：调用 `GET /api/projects/:projectId/tasks`，确认项目成员可读取任务，非成员返回 404；项目无任务时应返回空数组。
+16. **收藏项目**：项目成员调用 `PUT /api/projects/:projectId/favorite`，确认返回 `isFavorite: true`；重复调用仍成功且项目只存在一条该用户的收藏关系。
+17. **取消收藏**：调用 `DELETE /api/projects/:projectId/favorite`，确认返回 `isFavorite: false`；重复调用仍成功，并且其他成员的收藏状态不受影响。
+18. **收藏状态读取和权限**：重新查询列表和详情确认 `isFavorite` 持久化；非项目成员调用收藏或取消收藏接口应返回 404。
 
 如果测试失败，记录请求方法和 URL、请求体、HTTP 状态码和响应 JSON。排查时不要把数据库密码、JWT 密钥、密码或 token 贴出来。
 
@@ -532,5 +569,4 @@ export interface UpdateTaskRequest {
 
 - 用户注册、登录和当前用户查询已实现；密码修改/重置及 token 刷新尚未实现。开发账户仍可由 `seed:dev-user` 脚本创建或重置。
 - 任务列表查询和创建 API 已实现；更新和删除任务的 API 尚未实现。
-- 收藏关系虽有数据库模型，但项目 API 尚未读取收藏数据，`isFavorite` 当前固定为 `false`。
 - 未匹配的 URL 使用普通 404 响应：`{ "success": false, "error": { "code": "NOT_FOUND", "message": "接口不存在" } }`。

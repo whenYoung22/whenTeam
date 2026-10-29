@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 
-import { createProject, getProject, getProjectOverview, getProjects, updateProject } from "../services/project.service.js";
+import { createProject, getProject, getProjectOverview, getProjects, setProjectFavorite, updateProject } from "../services/project.service.js";
 
 import { createProjectSchema, updateProjectSchema } from "../validations/project.validation.js";
 
@@ -88,6 +88,42 @@ export const updateProjectController: RequestHandler = async (
       input,
     );
     sendSuccess(res, project);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** PUT /api/projects/:projectId/favorite：收藏当前项目。 */
+export const favoriteProjectController: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    await setProjectFavorite(
+      res.locals.userId as number,
+      parseProjectId(req.params.projectId),
+      true,
+    );
+    sendSuccess(res, { isFavorite: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** DELETE /api/projects/:projectId/favorite：取消收藏当前项目。 */
+export const unfavoriteProjectController: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    await setProjectFavorite(
+      res.locals.userId as number,
+      parseProjectId(req.params.projectId),
+      false,
+    );
+    sendSuccess(res, { isFavorite: false });
   } catch (error) {
     next(error);
   }
