@@ -187,6 +187,10 @@ export async function updateTask(
     throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
   }
 
+  if (existingTask.assigneeId !== userId) {
+    throw new AppError(403, "TASK_FORBIDDEN", "只有任务负责人可以修改任务");
+  }
+
   if (
     input.assigneeId !== undefined &&
     !existingTask.project.members.some(

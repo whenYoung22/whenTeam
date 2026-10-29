@@ -1,26 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  BellOutlined,
-  CheckOutlined,
-} from "@ant-design/icons";
-import {
-  Badge,
-  Button,
-  Empty,
-  List,
-  message,
-  Popover,
-  Spin,
-  Typography,
-} from "antd";
 
-import {
-  getNotifications,
-  getUnreadNotificationCount,
-  markAllNotificationsRead,
-  markNotificationRead,
-} from "@/api/notification";
+import { BellOutlined, CheckOutlined } from "@ant-design/icons";
+import { Badge, Button, Empty, List, message, Popover, Spin, Typography } from "antd";
+
+import { getNotifications, getUnreadNotificationCount, markAllNotificationsRead, markNotificationRead } from "@/api/notification";
+
 import type { Notification } from "@shared/index";
 
 import "./index.css";

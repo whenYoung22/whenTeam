@@ -1,13 +1,9 @@
 import type { RequestHandler } from "express";
-import {
-  getNotifications,
-  getUnreadNotificationCount,
-  markAllNotificationsRead,
-  markNotificationRead,
-} from "../services/notification.service.js";
+import { getNotifications, getUnreadNotificationCount, markAllNotificationsRead, markNotificationRead } from "../services/notification.service.js";
 import { AppError } from "../utils/AppError.util.js";
 import { sendSuccess } from "../utils/response.util.js";
 
+// 解析并校验路径参数中的通知 ID
 function parseNotificationId(value: string | string[] | undefined): number {
   if (typeof value !== "string") {
     throw new AppError(400, "INVALID_NOTIFICATION_ID", "通知 ID 无效");
@@ -21,6 +17,7 @@ function parseNotificationId(value: string | string[] | undefined): number {
   return notificationId;
 }
 
+// 获取当前用户的通知列表（含未读数）
 export const getNotificationsController: RequestHandler = async (
   _req,
   res,
@@ -33,6 +30,7 @@ export const getNotificationsController: RequestHandler = async (
   }
 };
 
+// 获取当前用户的未读通知数量
 export const getUnreadNotificationCountController: RequestHandler = async (
   _req,
   res,
@@ -48,6 +46,7 @@ export const getUnreadNotificationCountController: RequestHandler = async (
   }
 };
 
+// 将指定通知标记为已读 ；先解析并校验路径中的 notificationId，再调用 service 层处理归属校验
 export const markNotificationReadController: RequestHandler = async (
   req,
   res,
@@ -64,6 +63,7 @@ export const markNotificationReadController: RequestHandler = async (
   }
 };
 
+// 将当前用户的所有未读通知标记为已读
 export const markAllNotificationsReadController: RequestHandler = async (
   _req,
   res,
