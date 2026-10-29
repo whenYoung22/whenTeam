@@ -1,0 +1,21 @@
+model Notification {
+  id         Int              @id @default(autoincrement())
+  type       NotificationType
+  content    String           @db.VarChar(500)
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now()) @db.DateTime(3)
+  creatorId  Int
+  receiverId Int
+  projectId  Int
+  taskId     Int?
+
+  creator  User    @relation("NotificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  receiver User    @relation("NotificationReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  task     Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([receiverId, createdAt])
+  @@index([receiverId, isRead, createdAt])
+  @@index([projectId])
+  @@index([taskId])
+}

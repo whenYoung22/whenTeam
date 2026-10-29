@@ -25,3 +25,12 @@ export const TaskPriority = {
 } as const
 
 export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
+
+
+export const NotificationType = {
+  TASK_ASSIGNED: 'TASK_ASSIGNED',
+  TASK_STATUS_CHANGED: 'TASK_STATUS_CHANGED',
+  PROJECT_MEMBER_ADDED: 'PROJECT_MEMBER_ADDED'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]

@@ -6,6 +6,7 @@ import userRoutes from "./routes/user.routes.js";
 
 import projectRoutes from "./routes/project.routes.js";
 import taskRoutes from "./routes/task.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 import { authMiddleware } from "./middlewares/auth.middleware.js";
 import { errorMiddleware } from "./middlewares/error.middlerware.js";
@@ -55,6 +56,9 @@ app.use("/api/projects", projectRoutes);
 
 // 任务
 app.use("/api", taskRoutes);
+
+// 通知
+app.use("/api/notifications", notificationRoutes);
 
 // 处理 404 的普通中间件 如果请求走到了这里，说明前面的路由都没匹配上
 app.use((_req, res) => {

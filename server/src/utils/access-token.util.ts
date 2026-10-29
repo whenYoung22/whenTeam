@@ -10,6 +10,7 @@ const audience = "whenteam-client";
 export function getAuthSecret(): Uint8Array {
   const secret = process.env.AUTH_JWT_SECRET;
 
+  // 密钥长度检查
   if (!secret || Buffer.byteLength(secret, "utf8") < 32) {
     throw new Error("AUTH_JWT_SECRET must contain at least 32 bytes");
   }

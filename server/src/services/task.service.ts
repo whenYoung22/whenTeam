@@ -1,7 +1,9 @@
 import type { TaskResponse, UserSummary } from "../../../shared/index.js";
 import type { Prisma } from "../generated/prisma/client.js";
+import { NotificationType } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../utils/AppError.util.js";
+import { createNotifications } from "./notification.service.js";
 import type {
   CreateTaskInput,
   UpdateTaskInput,
@@ -119,16 +121,33 @@ export async function createProjectTask(
     );
   }
 
-  const task = await prisma.task.create({
-    data: {
-      title: input.title,
-      description: input.description ?? null,
-      priority: input.priority,
-      dueDate,
-      projectId,
-      assigneeId: input.assigneeId,
-    },
-    include: taskInclude,
+  const task = await prisma.$transaction(async (tx) => {
+    const createdTask = await tx.task.create({
+      data: {
+        title: input.title,
+        description: input.description ?? null,
+        priority: input.priority,
+        dueDate,
+        projectId,
+        assigneeId: input.assigneeId,
+      },
+      include: taskInclude,
+    });
+
+    if (input.assigneeId !== userId) {
+      await createNotifications(tx, [
+        {
+          type: NotificationType.TASK_ASSIGNED,
+          content: `将任务「${createdTask.title}」分配给你`,
+          creatorId: userId,
+          receiverId: input.assigneeId,
+          projectId,
+          taskId: createdTask.id,
+        },
+      ]);
+    }
+
+    return createdTask;
   });
 
   return toTaskResponse(task);
@@ -150,6 +169,9 @@ export async function updateTask(
       },
     },
     select: {
+      title: true,
+      status: true,
+      assigneeId: true,
       project: {
         select: {
           dueDate: true,
@@ -198,11 +220,61 @@ export async function updateTask(
   if (input.assigneeId !== undefined) data.assigneeId = input.assigneeId;
   if (dueDate !== undefined) data.dueDate = dueDate;
 
-  const task = await prisma.task.update({
-    where: { id: taskId },
-    data,
-    include: taskInclude,
+  const task = await prisma.$transaction(async (tx) => {
+    const updatedTask = await tx.task.update({
+      where: { id: taskId },
+      data,
+      include: taskInclude,
+    });
+
+    const notifications = [];
+    if (
+      input.assigneeId !== undefined &&
+      input.assigneeId !== existingTask.assigneeId &&
+      input.assigneeId !== userId
+    ) {
+      notifications.push({
+        type: NotificationType.TASK_ASSIGNED,
+        content: `将任务「${updatedTask.title}」分配给你`,
+        creatorId: userId,
+        receiverId: input.assigneeId,
+        projectId: updatedTask.projectId,
+        taskId,
+      });
+    }
+
+    if (input.status !== undefined && input.status !== existingTask.status) {
+      const recipients = existingTask.project.members
+        .map(({ userId: memberId }) => memberId)
+        .filter((memberId) => memberId !== userId);
+      notifications.push(
+        ...recipients.map((receiverId) => ({
+          type: NotificationType.TASK_STATUS_CHANGED,
+          content: `将任务「${updatedTask.title}」状态更新为「${statusLabel(updatedTask.status)}」`,
+          creatorId: userId,
+          receiverId,
+          projectId: updatedTask.projectId,
+          taskId,
+        })),
+      );
+    }
+
+    await createNotifications(tx, notifications);
+    return updatedTask;
   });
 
   return toTaskResponse(task);
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case "TODO":
+      return "待开始";
+    case "DOING":
+      return "进行中";
+    case "DONE":
+      return "已完成";
+    default:
+      return status;
+  }
 }

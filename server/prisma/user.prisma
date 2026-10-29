@@ -13,4 +13,6 @@ model User {
   favorites      ProjectFavorite[]
   assignedTasks  Task[]            @relation("TaskAssignee")
   authSessions   AuthSession[]
+  createdNotifications Notification[] @relation("NotificationCreator")
+  receivedNotifications Notification[] @relation("NotificationReceiver")
 }

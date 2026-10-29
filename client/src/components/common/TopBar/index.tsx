@@ -1,25 +1,23 @@
-import { Avatar, Badge, Button, Tooltip } from "antd";
+import { Avatar, Button, Tooltip } from "antd";
 import {
-  BellOutlined,
   SearchOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { useMatch, useNavigate } from "react-router-dom";
 
 import "./index.css";
+import NotificationPopover from "@/components/common/NotificationPopover";
 
 interface TopBarProps {
   projectName: string | null;
   userName: string;
   onSearchClick: () => void;
-  onNotificationsClick: () => void;
 }
 
 export default function TopBar({
   projectName,
   userName,
   onSearchClick,
-  onNotificationsClick,
 }: TopBarProps) {
   const navigate = useNavigate();
 
@@ -71,15 +69,7 @@ export default function TopBar({
           />
         </Tooltip>
 
-        <Badge dot offset={[-3, 3]}>
-          <Button
-            type="text"
-            className="topbar-icon-button"
-            icon={<BellOutlined />}
-            onClick={onNotificationsClick}
-            aria-label="消息通知"
-          />
-        </Badge>
+        <NotificationPopover />
 
         <div className="topbar-user">
           <Avatar size="small">{avatarText}</Avatar>

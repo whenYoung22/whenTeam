@@ -29,4 +29,7 @@ export type {
   TaskPriority,
 } from "./domain/task";
 
-export type { Notification } from "./domain/notification";
+export type {
+  Notification,
+  NotificationListResponse,
+} from "./domain/notification";

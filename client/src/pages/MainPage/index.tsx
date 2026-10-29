@@ -65,10 +65,6 @@ export default function MainPage() {
     message.info("搜索功能暂未实现");
   };
 
-  const handleNotificationsClick = () => {
-    message.info("通知功能暂未实现");
-  };
-
   const handleLogout = async () => {
     try {
       await logout();
@@ -98,7 +94,6 @@ export default function MainPage() {
           projectName={selectedProject?.name ?? null}
           userName={currentUser?.name ?? ""}
           onSearchClick={handleSearchClick}
-          onNotificationsClick={handleNotificationsClick}
         />
 
         <main className="main-page-content">

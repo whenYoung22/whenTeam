@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   AuthSession: 'AuthSession',
+  Notification: 'Notification',
   ProjectFavorite: 'ProjectFavorite',
   Project: 'Project',
   ProjectMember: 'ProjectMember',
@@ -86,6 +87,21 @@ export const AuthSessionScalarFieldEnum = {
 } as const
 
 export type AuthSessionScalarFieldEnum = (typeof AuthSessionScalarFieldEnum)[keyof typeof AuthSessionScalarFieldEnum]
+
+
+export const NotificationScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  content: 'content',
+  isRead: 'isRead',
+  createdAt: 'createdAt',
+  creatorId: 'creatorId',
+  receiverId: 'receiverId',
+  projectId: 'projectId',
+  taskId: 'taskId'
+} as const
+
+export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
 export const ProjectFavoriteScalarFieldEnum = {
@@ -169,6 +185,13 @@ export const AuthSessionOrderByRelevanceFieldEnum = {
 } as const
 
 export type AuthSessionOrderByRelevanceFieldEnum = (typeof AuthSessionOrderByRelevanceFieldEnum)[keyof typeof AuthSessionOrderByRelevanceFieldEnum]
+
+
+export const NotificationOrderByRelevanceFieldEnum = {
+  content: 'content'
+} as const
+
+export type NotificationOrderByRelevanceFieldEnum = (typeof NotificationOrderByRelevanceFieldEnum)[keyof typeof NotificationOrderByRelevanceFieldEnum]
 
 
 export const ProjectOrderByRelevanceFieldEnum = {

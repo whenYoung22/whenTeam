@@ -5,9 +5,11 @@ import { prisma } from "../lib/prisma.js";
 import type { CreateProjectInput, UpdateProjectInput } from "../validations/project.validation.js";
 
 import type { Prisma } from "../generated/prisma/client.js";
+import { NotificationType } from "../generated/prisma/client.js";
 
 import { AppError } from "../utils/AppError.util.js";
 import { getSoftRandomColor } from "../utils/getSoftRandomColor.util.js";
+import { createNotifications } from "./notification.service.js";
 
 
 // 详情查询只取组装接口响应需要的任务状态和成员摘要，避免读取无关字段。
@@ -180,6 +182,19 @@ export async function createProject(
       include: projectDetailInclude,
     });
 
+    await createNotifications(
+      tx,
+      memberIds
+        .filter((memberId) => memberId !== userId)
+        .map((receiverId) => ({
+          type: NotificationType.PROJECT_MEMBER_ADDED,
+          content: `邀请你加入项目「${project.name}」`,
+          creatorId: userId,
+          receiverId,
+          projectId: project.id,
+        })),
+    );
+
     return toProjectDetailResponse(project);
   });
 }
@@ -203,6 +218,7 @@ export async function updateProject(
       },
       select: {
         creatorId: true,
+        members: { select: { userId: true } },
       },
     });
 
@@ -245,6 +261,7 @@ export async function updateProject(
       updateData.dueDate = dueDate;
     }
 
+    let hasNewMembers = false;
     if (input.memberIds !== undefined) {
       const memberIds = [
         ...new Set([...input.memberIds, existingProject.creatorId]),
@@ -259,6 +276,13 @@ export async function updateProject(
       if (users.length !== memberIds.length) {
         throw new AppError(400, "MEMBER_NOT_FOUND", "部分项目成员不存在");
       }
+
+      hasNewMembers = memberIds.some(
+        (memberId) =>
+          !existingProject.members.some(
+            ({ userId: existingMemberId }) => existingMemberId === memberId,
+          ),
+      );
 
       await tx.projectMember.deleteMany({
         where: {
@@ -281,6 +305,23 @@ export async function updateProject(
       data: updateData,
       include: projectDetailInclude,
     });
+
+    if (hasNewMembers) {
+      const recipients = await tx.projectMember.findMany({
+        where: { projectId, userId: { not: userId } },
+        select: { userId: true },
+      });
+      await createNotifications(
+        tx,
+        recipients.map(({ userId: receiverId }) => ({
+          type: NotificationType.PROJECT_MEMBER_ADDED,
+          content: `邀请你加入项目「${project.name}」`,
+          creatorId: userId,
+          receiverId,
+          projectId,
+        })),
+      );
+    }
 
     return toProjectDetailResponse(project);
   });

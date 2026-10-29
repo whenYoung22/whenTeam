@@ -1,4 +1,4 @@
-// 负责 Refresh Token Cookie 的读取、设置和清除，不负责验证 Token 或管理数据库会话
+// 负责RefreshToken Cookie的读取、设置和清除，不负责验证 Token 或管理数据库会话；在auth.controller中调用
 
 import type { Request, Response } from "express";
 import { refreshTokenLifetimeMs } from "./auth.constants.js";

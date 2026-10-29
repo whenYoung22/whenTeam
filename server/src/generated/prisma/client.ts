@@ -43,8 +43,14 @@ export { Prisma }
 
 /**
  * Model AuthSession
+ * 
  */
 export type AuthSession = Prisma.AuthSessionModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
 /**
  * Model ProjectFavorite
  * 

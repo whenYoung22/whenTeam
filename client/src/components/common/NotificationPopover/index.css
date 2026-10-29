@@ -1,0 +1,79 @@
+.notification-popover {
+  width: 360px;
+}
+
+.notification-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #edf0f5;
+}
+
+.notification-popover-list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.notification-popover-loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.notification-list-item.ant-list-item {
+  padding: 0;
+}
+
+.notification-item {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  padding: 12px 8px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #f7f8fc;
+}
+
+.notification-item-indicator {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.notification-item.unread .notification-item-indicator {
+  background: #7067ef;
+}
+
+.notification-item-body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.notification-item-content {
+  color: #344054;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.notification-item-time {
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+@media (max-width: 480px) {
+  .notification-popover {
+    width: min(360px, calc(100vw - 32px));
+  }
+}

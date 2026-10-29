@@ -1,5 +1,13 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
-import { useOutletContext, useParams } from "react-router-dom";
+import {
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import {
+  useOutletContext,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 
 import { Alert, Button, Empty, Spin } from "antd";
 
@@ -73,10 +81,28 @@ function ProjectDetailContent({
   initialTasks,
   setProjects,
 }: ProjectDetailContentProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [project, setProject] = useState(initialProject);
   const [tasks, setTasks] = useState(initialTasks);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<TaskResponse | null>(null);
+  const taskIdParam = searchParams.get("taskId");
+  const taskId = taskIdParam === null ? null : Number(taskIdParam);
+  const selectedTask =
+    taskId !== null && Number.isSafeInteger(taskId) && taskId > 0
+      ? tasks.find((task) => task.id === taskId) ?? null
+      : null;
+
+  const clearTaskSelection = () => {
+    if (!searchParams.has("taskId")) return;
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete("taskId");
+    setSearchParams(nextSearchParams, { replace: true });
+  };
+  const handleTaskClick = (task: TaskResponse) => {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.set("taskId", String(task.id));
+    setSearchParams(nextSearchParams, { replace: true });
+  };
 
   const handleSaveProject = (updated: ProjectDetailResponse) => {
     setProject(updated);
@@ -116,7 +142,7 @@ function ProjectDetailContent({
       );
     setTasks(updatedTasks);
     updateTaskMetrics(updatedTasks);
-    setSelectedTask(null);
+    clearTaskSelection();
   };
 
   const updateTaskMetrics = (updatedTasks: TaskResponse[]) => {
@@ -149,7 +175,7 @@ function ProjectDetailContent({
       <TaskList
         tasks={tasks}
         onCreateTask={() => setCreateTaskOpen(true)}
-        onTaskClick={setSelectedTask}
+        onTaskClick={handleTaskClick}
       />
 
       <CreateTaskModal
@@ -165,7 +191,7 @@ function ProjectDetailContent({
         task={selectedTask}
         projectDueDate={project.dueDate}
         projectMembers={project.members}
-        onClose={() => setSelectedTask(null)}
+        onClose={clearTaskSelection}
         onSave={handleTaskSave}
       />
     </section>
