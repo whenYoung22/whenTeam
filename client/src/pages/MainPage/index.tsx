@@ -12,12 +12,15 @@ import useProjectStore from "@/stores/projectStore";
 import { getCurrentUser } from "@/api/user";
 import { logout } from "@/api/auth";
 import { clearAuthToken } from "@/utils/authToken";
+import useNotificationWebSocket from "@/hooks/useNotificationWebSocket";
 
 import type { ProjectListItem, User } from "@shared/index";
 
 import "./index.css";
 
 export default function MainPage() {
+  useNotificationWebSocket();
+
   const navigate = useNavigate();
   const { projectId } = useParams();
 

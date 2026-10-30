@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { AppError } from "../utils/AppError.util.js";
 import { toTaskResponse } from "../mappers/task.mapper.js";
 import { createNotifications } from "./notification.service.js";
+import { publishNotificationChanges } from "../websocket/notification.gateway.js";
 import type {
   CreateTaskInput,
   UpdateTaskInput,
@@ -95,7 +96,7 @@ export async function createProjectTask(
     );
   }
 
-  const task = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const createdTask = await tx.task.create({
       data: {
         title: input.title,
@@ -108,23 +109,27 @@ export async function createProjectTask(
       include: taskInclude,
     });
 
-    if (input.assigneeId !== userId) {
-      await createNotifications(tx, [
-        {
-          type: NotificationType.TASK_ASSIGNED,
-          content: `将任务「${createdTask.title}」分配给你`,
-          creatorId: userId,
-          receiverId: input.assigneeId,
-          projectId,
-          taskId: createdTask.id,
-        },
-      ]);
-    }
+    const notificationReceiverIds = await createNotifications(
+      tx,
+      input.assigneeId === userId
+        ? []
+        : [
+            {
+              type: NotificationType.TASK_ASSIGNED,
+              content: `将任务「${createdTask.title}」分配给你`,
+              creatorId: userId,
+              receiverId: input.assigneeId,
+              projectId,
+              taskId: createdTask.id,
+            },
+          ],
+    );
 
-    return createdTask;
+    return { task: createdTask, notificationReceiverIds };
   });
 
-  return toTaskResponse(task);
+  publishNotificationChanges(result.notificationReceiverIds);
+  return toTaskResponse(result.task);
 }
 
 /** Update a task that belongs to a project the user can access. */
@@ -208,7 +213,7 @@ export async function updateTask(
   if (input.assigneeId !== undefined) data.assigneeId = input.assigneeId;
   if (dueDate !== undefined) data.dueDate = dueDate;
 
-  const task = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const updatedTask = await tx.task.update({
       where: { id: taskId },
       data,
@@ -247,16 +252,17 @@ export async function updateTask(
       );
     }
 
-    await createNotifications(tx, notifications);
-    return updatedTask;
+    const notificationReceiverIds = await createNotifications(tx, notifications);
+    return { task: updatedTask, notificationReceiverIds };
   });
 
-  return toTaskResponse(task);
+  publishNotificationChanges(result.notificationReceiverIds);
+  return toTaskResponse(result.task);
 }
 
 /** Delete a task; only its assignee or the project creator may do so. */
 export async function deleteTask(userId: number, taskId: number): Promise<void> {
-  await prisma.$transaction(async (tx) => {
+  const notificationReceiverIds = await prisma.$transaction(async (tx) => {
     const task = await tx.task.findFirst({
       where: {
         id: taskId,
@@ -291,7 +297,7 @@ export async function deleteTask(userId: number, taskId: number): Promise<void> 
     }
 
     await tx.notification.deleteMany({ where: { taskId } });
-    await createNotifications(
+    const notificationReceiverIds = await createNotifications(
       tx,
       task.project.members
         .map(({ userId: receiverId }) => receiverId)
@@ -322,7 +328,11 @@ export async function deleteTask(userId: number, taskId: number): Promise<void> 
     if (result.count === 0) {
       throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
     }
+
+    return notificationReceiverIds;
   });
+
+  publishNotificationChanges(notificationReceiverIds);
 }
 
 function statusLabel(status: string): string {

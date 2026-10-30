@@ -12,6 +12,7 @@ import { getSoftRandomColor } from "../utils/getSoftRandomColor.util.js";
 import { toProjectDetailResponse, toProjectListItem } from "../mappers/project.mapper.js";
 
 import { createNotifications } from "./notification.service.js";
+import { publishNotificationChanges } from "../websocket/notification.gateway.js";
 
 
 // 详情查询只取组装接口响应需要的任务状态和成员摘要，避免读取无关字段。
@@ -128,7 +129,7 @@ export async function createProject(
 ): Promise<ProjectDetailResponse> {
   const memberIds = [...new Set([...input.memberIds, userId])];
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const users = await tx.user.findMany({
       where: {
         id: { in: memberIds },
@@ -156,7 +157,7 @@ export async function createProject(
       include: projectDetailInclude,
     });
 
-    await createNotifications(
+    const notificationReceiverIds = await createNotifications(
       tx,
       memberIds
         .filter((memberId) => memberId !== userId)
@@ -169,8 +170,14 @@ export async function createProject(
         })),
     );
 
-    return toProjectDetailResponse(project);
+    return {
+      project: toProjectDetailResponse(project),
+      notificationReceiverIds,
+    };
   });
+
+  publishNotificationChanges(result.notificationReceiverIds);
+  return result.project;
 }
 
 /**
@@ -182,7 +189,7 @@ export async function updateProject(
   projectId: number,
   input: UpdateProjectInput,
 ): Promise<ProjectDetailResponse> {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const existingProject = await tx.project.findFirst({
       where: {
         id: projectId,
@@ -284,27 +291,32 @@ export async function updateProject(
       include: projectDetailInclude,
     });
 
-    await createNotifications(
-      tx,
-      removedMemberIds.map((receiverId) => ({
-        type: NotificationType.PROJECT_MEMBER_REMOVED,
-        content: `你已被移出项目「${project.name}」`,
-        creatorId: userId,
-        receiverId,
-        projectId,
-      })),
-    );
-
-    if (newMembers.length > 0) {
-      await createNotifications(
+    const notificationReceiverIds: number[] = [];
+    notificationReceiverIds.push(
+      ...(await createNotifications(
         tx,
-        newMembers.map(({ id: receiverId }) => ({
-          type: NotificationType.PROJECT_MEMBER_ADDED,
-          content: `邀请你加入项目「${project.name}」`,
+        removedMemberIds.map((receiverId) => ({
+          type: NotificationType.PROJECT_MEMBER_REMOVED,
+          content: `你已被移出项目「${project.name}」`,
           creatorId: userId,
           receiverId,
           projectId,
         })),
+      )),
+    );
+
+    if (newMembers.length > 0) {
+      notificationReceiverIds.push(
+        ...(await createNotifications(
+          tx,
+          newMembers.map(({ id: receiverId }) => ({
+            type: NotificationType.PROJECT_MEMBER_ADDED,
+            content: `邀请你加入项目「${project.name}」`,
+            creatorId: userId,
+            receiverId,
+            projectId,
+          })),
+        )),
       );
 
       const newMemberIds = newMembers.map(({ id }) => id);
@@ -313,15 +325,17 @@ export async function updateProject(
         where: { projectId, userId: { notIn: [userId, ...newMemberIds] } },
         select: { userId: true },
       });
-      await createNotifications(
-        tx,
-        existingMemberRecipients.map(({ userId: receiverId }) => ({
-          type: NotificationType.PROJECT_MEMBER_ADDED,
-          content: `邀请${newMemberNames}加入了项目「${project.name}」`,
-          creatorId: userId,
-          receiverId,
-          projectId,
-        })),
+      notificationReceiverIds.push(
+        ...(await createNotifications(
+          tx,
+          existingMemberRecipients.map(({ userId: receiverId }) => ({
+            type: NotificationType.PROJECT_MEMBER_ADDED,
+            content: `邀请${newMemberNames}加入了项目「${project.name}」`,
+            creatorId: userId,
+            receiverId,
+            projectId,
+          })),
+        )),
       );
     }
 
@@ -332,8 +346,14 @@ export async function updateProject(
       select: { projectId: true },
     });
 
-    return toProjectDetailResponse(project, favorite !== null);
+    return {
+      project: toProjectDetailResponse(project, favorite !== null),
+      notificationReceiverIds,
+    };
   });
+
+  publishNotificationChanges(result.notificationReceiverIds);
+  return result.project;
 }
 
 /** Delete a project and its related data; only the project creator may do so. */
@@ -341,7 +361,7 @@ export async function deleteProject(
   userId: number,
   projectId: number,
 ): Promise<void> {
-  await prisma.$transaction(async (tx) => {
+  const notificationReceiverIds = await prisma.$transaction(async (tx) => {
     const project = await tx.project.findUnique({
       where: { id: projectId },
       select: {
@@ -360,7 +380,7 @@ export async function deleteProject(
     }
 
     await tx.notification.deleteMany({ where: { projectId } });
-    await createNotifications(
+    const notificationReceiverIds = await createNotifications(
       tx,
       project.members
         .map(({ userId: receiverId }) => receiverId)
@@ -374,5 +394,9 @@ export async function deleteProject(
         })),
     );
     await tx.project.delete({ where: { id: projectId } });
+
+    return notificationReceiverIds;
   });
+
+  publishNotificationChanges(notificationReceiverIds);
 }

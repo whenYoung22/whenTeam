@@ -10,22 +10,11 @@ import notificationRoutes from "./routes/notification.routes.js";
 
 import { authMiddleware } from "./middlewares/auth.middleware.js";
 import { errorMiddleware } from "./middlewares/error.middlerware.js";
+import { getClientOrigins } from "./utils/client-origins.util.js";
 
 const app = express();
 
-const clientOrigins = (
-  process.env.CLIENT_ORIGINS ??
-  "http://localhost:5173,http://localhost:5174"
-)
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-
-if (clientOrigins.length === 0) {
-  throw new Error("CLIENT_ORIGINS must contain at least one allowed origin");
-}
-
-app.use(cors({ origin: clientOrigins, credentials: true }));
+app.use(cors({ origin: getClientOrigins(), credentials: true }));
 
 app.use(express.json());
 

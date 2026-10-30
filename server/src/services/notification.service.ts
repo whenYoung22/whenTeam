@@ -20,9 +20,9 @@ type NewNotification = {
 export async function createNotifications(
   tx: Prisma.TransactionClient,
   notifications: NewNotification[],
-): Promise<void> {
+): Promise<number[]> {
   // 空列表直接返回，避免无意义的数据库调用
-  if (notifications.length === 0) return;
+  if (notifications.length === 0) return [];
 
   await tx.notification.createMany({
     data: notifications.map((notification) => ({
@@ -31,6 +31,8 @@ export async function createNotifications(
       taskId: notification.taskId ?? null,
     })),
   });
+
+  return [...new Set(notifications.map(({ receiverId }) => receiverId))];
 }
 
 // 获取指定用户的通知列表（最近 20 条）及未读数

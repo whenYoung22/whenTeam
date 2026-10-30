@@ -75,6 +75,14 @@ whenTeam/
 + **项目管理**：查看项目列表、查看项目详情、创建、编辑和删除项目。
 + **任务管理**：创建、编辑、删除任务，修改任务状态和优先级。
 + **通知管理**：查看通知和未读数；删除项目或任务后向其他项目成员发送通知。
++ **实时通知**：通过 WebSocket 向在线用户推送通知变更，通知内容仍通过受 JWT 保护的 REST 接口读取。
+
+### WebSocket 通知
+
+- 客户端连接 `ws(s)://<server>/ws` 后，发送 `{ "type": "auth", "token": "<access token>" }` 完成认证。
+- 认证成功后服务端发送 `{ "type": "ready" }`；新通知持久化且事务提交后，向对应用户发送 `{ "type": "notification.created" }`。
+- 收到通知事件或重新连接成功后，客户端通过 REST 接口刷新通知和未读数。离线期间的通知保存在数据库中，不依赖 WebSocket 补发。
+- 当前连接管理为单服务实例内存状态；多实例部署需要共享连接路由方案。
 
 
 
@@ -109,16 +117,16 @@ whenTeam/
 - 创建项目使用 `CreateProjectRequest`，`memberIds` 可为空；服务端会自动将创建者加入项目，响应为完整的 `ProjectDetailResponse`。
 - 项目详情只对项目成员开放；目前只有创建者可以更新项目。更新成员列表时按传入列表替换其他成员，创建者始终保留。
 - 项目总览的 `weekTaskCount` 统计当前用户作为负责人、截止日期在 UTC 周一至下周一（不含）之间且状态不是 `DONE` 的任务，并限定在当前用户参与的项目中。协作者按所有这些项目的成员去重统计，包含当前用户。
-- 收藏功能尚未接入后端；为保留现有前端 mock 和收藏筛选，shared 类型暂时仍包含 `isFavorite`，后端项目响应目前统一返回 `false`。
+- 收藏通过独立的 `ProjectFavorite` 用户-项目关联表持久化，`isFavorite` 按当前用户写入项目响应。
 - 项目截止日期必填，创建和更新时都不能传 `null`。
 - `Task` 表示任务基础数据，负责人关联使用 `assigneeId`；`TaskResponse` 面向前端并包含 `assignee` 用户摘要。
 - 创建、更新任务分别使用 `CreateTaskRequest`、`UpdateTaskRequest`。创建任务所属项目由项目路由确定，不在请求体重复传 `projectId`。
 - 项目成员可以创建任务；任务负责人必须是该项目成员。任务状态由服务端默认设为 `TODO`。
-- 项目成员可以更新所属自己负责的项目任务；更新任务通过 `PATCH /api/tasks/:taskId`，任务列表和创建任务仍通过项目路径访问。
+- 任务负责人可以更新自己的任务；项目创建者可以处理负责人已被移出项目的孤儿任务。更新任务通过 `PATCH /api/tasks/:taskId`，任务列表和创建任务仍通过项目路径访问。
 - 任务截止日期和负责人必填；更新时可以省略对应字段表示不修改，但不能传 `null` 清空。
 - 任务截止日期不得晚于所属项目的截止日期。创建和更新任务时，服务端业务逻辑都必须比较这两个日期；前端表单也会限制可选日期，但不能用前端限制替代服务端检查。
 - 创建任务时状态由服务端默认设为 `TODO`；客户端通过更新请求修改状态。
-- 收藏建议使用独立的用户-项目多对多关联表（例如 `ProjectFavorite`），以 `(userId, projectId)` 唯一约束避免重复收藏；`isFavorite` 由服务端针对当前用户查询并放入响应，不是项目表字段。
+- 收藏使用独立的用户-项目多对多关联表 `ProjectFavorite`，以 `(userId, projectId)` 唯一约束避免重复收藏；`isFavorite` 由服务端针对当前用户查询并放入响应，不是项目表字段。
 - `UserRecord` 是后端内部类型，密码只以 `passwordHash` 保存，不能作为 API 响应返回。
 
 接口可以按以下资源组织；具体路由实现时以这些共享请求/响应类型为准：
@@ -130,9 +138,17 @@ whenTeam/
 | 获取项目详情 | `GET /api/projects/:projectId` | — | `ProjectDetailResponse` |
 | 创建项目 | `POST /api/projects` | `CreateProjectRequest` | `ProjectDetailResponse` |
 | 更新项目 | `PATCH /api/projects/:projectId` | `UpdateProjectRequest` | `ProjectDetailResponse` |
+| 删除项目 | `DELETE /api/projects/:projectId` | — | — |
+| 收藏项目 | `PUT /api/projects/:projectId/favorite` | — | `{ isFavorite: true }` |
+| 取消收藏 | `DELETE /api/projects/:projectId/favorite` | — | `{ isFavorite: false }` |
 | 获取项目任务 | `GET /api/projects/:projectId/tasks` | — | `TaskResponse[]` |
 | 创建项目任务 | `POST /api/projects/:projectId/tasks` | `CreateTaskRequest` | `TaskResponse` |
 | 更新任务 | `PATCH /api/tasks/:taskId` | `UpdateTaskRequest` | `TaskResponse` |
+| 删除任务 | `DELETE /api/tasks/:taskId` | — | — |
+| 获取通知 | `GET /api/notifications` | — | `NotificationListResponse` |
+| 获取未读数 | `GET /api/notifications/unread-count` | — | `number` |
+| 标记通知已读 | `PATCH /api/notifications/:notificationId/read` | — | `{ isRead: true }` |
+| 全部标记已读 | `POST /api/notifications/read-all` | — | `{ isRead: true }` |
 
 
 
@@ -191,11 +207,13 @@ updatedAt
 
 ```text
 id
+type
 creatorId
 creatorName
 receiverId
 content
-projectId
+projectId (nullable)
+taskId (nullable)
 isRead
 createdAt
 ```
