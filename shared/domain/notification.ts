@@ -2,7 +2,11 @@ import type { IsoDateTime } from "../common/date";
 
 export interface Notification {
   id: number;
-  type: "TASK_ASSIGNED" | "TASK_STATUS_CHANGED" | "PROJECT_MEMBER_ADDED";
+  type:
+    | "TASK_ASSIGNED"
+    | "TASK_STATUS_CHANGED"
+    | "PROJECT_MEMBER_ADDED"
+    | "PROJECT_MEMBER_REMOVED";
   creatorId: number;
   creatorName: string;
   receiverId: number;

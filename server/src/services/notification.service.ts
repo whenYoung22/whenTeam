@@ -1,11 +1,11 @@
-import type { Notification as NotificationResponse, NotificationListResponse } from "../../../shared/index.js";
+import type { NotificationListResponse } from "../../../shared/index.js";
 
 import type { NotificationType, Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 
 import { AppError } from "../utils/AppError.util.js";
+import { toNotificationResponse } from "../mappers/notification.mapper.js";
 
-// 新建通知时所需的数据结构
 type NewNotification = {
   type: NotificationType;
   content: string;
@@ -31,34 +31,6 @@ export async function createNotifications(
       taskId: notification.taskId ?? null,
     })),
   });
-}
-
-//  将数据库查询结果转换为前端/共享层使用的通知响应格式
-// 主要处理 Date -> ISO 字符串的序列化，以及提取创建者姓名
-function toNotificationResponse(notification: {
-  id: number;
-  type: NotificationType;
-  content: string;
-  creatorId: number;
-  receiverId: number;
-  projectId: number;
-  taskId: number | null;
-  isRead: boolean;
-  createdAt: Date;
-  creator: { name: string };
-}): NotificationResponse {
-  return {
-    id: notification.id,
-    type: notification.type,
-    creatorId: notification.creatorId,
-    creatorName: notification.creator.name,
-    receiverId: notification.receiverId,
-    content: notification.content,
-    projectId: notification.projectId,
-    taskId: notification.taskId,
-    isRead: notification.isRead,
-    createdAt: notification.createdAt.toISOString(),
-  };
 }
 
 // 获取指定用户的通知列表（最近 20 条）及未读数

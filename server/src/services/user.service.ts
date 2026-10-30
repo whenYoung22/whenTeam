@@ -3,19 +3,7 @@ import type { User, UserSummary } from "../../../shared/index.js";
 import { prisma } from "../lib/prisma.js";
 
 import { AppError } from "../utils/AppError.util.js";
-
-// 返回给用户的格式
-function toUser(user: {
-  id: number;
-  name: string;
-  avatarUrl: string | null;
-}): User {
-  return {
-    id: user.id,
-    name: user.name,
-    ...(user.avatarUrl !== null ? { avatarUrl: user.avatarUrl } : {}),
-  };
-}
+import { toUser, toUserSummary } from "../mappers/user.mapper.js";
 
 // 获取当前登录用户
 export async function getCurrentUser(userId: number): Promise<User> {
@@ -38,5 +26,5 @@ export async function getUsers(): Promise<UserSummary[]> {
     orderBy: { name: "asc" },
   });
 
-  return users.map(toUser);
+  return users.map(toUserSummary);
 }

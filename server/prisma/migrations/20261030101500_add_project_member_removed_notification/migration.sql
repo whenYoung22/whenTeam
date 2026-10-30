@@ -1,0 +1,7 @@
+ALTER TABLE `Notification`
+    MODIFY `type` ENUM(
+        'TASK_ASSIGNED',
+        'TASK_STATUS_CHANGED',
+        'PROJECT_MEMBER_ADDED',
+        'PROJECT_MEMBER_REMOVED'
+    ) NOT NULL;

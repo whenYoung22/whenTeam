@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 
-import { createProject, getProject, getProjectOverview, getProjects, setProjectFavorite, updateProject } from "../services/project.service.js";
+import { getProjectOverview } from "../services/project-overview.service.js";
+import { createProject, getProject, getProjects, setProjectFavorite, updateProject } from "../services/project.service.js";
 
 import { createProjectSchema, updateProjectSchema } from "../validations/project.validation.js";
 

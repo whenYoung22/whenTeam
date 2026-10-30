@@ -1,8 +1,9 @@
-import type { TaskResponse, UserSummary } from "../../../shared/index.js";
+import type { TaskResponse } from "../../../shared/index.js";
 import type { Prisma } from "../generated/prisma/client.js";
 import { NotificationType } from "../generated/prisma/client.js";
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../utils/AppError.util.js";
+import { toTaskResponse } from "../mappers/task.mapper.js";
 import { createNotifications } from "./notification.service.js";
 import type {
   CreateTaskInput,
@@ -14,33 +15,6 @@ const taskInclude = {
     select: { id: true, name: true, avatarUrl: true },
   },
 } as const;
-
-type TaskWithAssignee = Prisma.TaskGetPayload<{
-  include: typeof taskInclude;
-}>;
-
-function toTaskResponse(task: TaskWithAssignee): TaskResponse {
-  const assignee: UserSummary = {
-    id: task.assignee.id,
-    name: task.assignee.name,
-    ...(task.assignee.avatarUrl !== null
-      ? { avatarUrl: task.assignee.avatarUrl }
-      : {}),
-  };
-
-  return {
-    id: task.id,
-    title: task.title,
-    description: task.description ?? "",
-    status: task.status,
-    priority: task.priority,
-    projectId: task.projectId,
-    dueDate: task.dueDate.toISOString().slice(0, 10),
-    createdAt: task.createdAt.toISOString(),
-    updatedAt: task.updatedAt.toISOString(),
-    assignee,
-  };
-}
 
 /** Return a project's tasks to one of its members. */
 export async function getProjectTasks(
