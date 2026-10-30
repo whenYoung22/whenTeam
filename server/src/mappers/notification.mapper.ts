@@ -8,7 +8,7 @@ export function toNotificationResponse(notification: {
   content: string;
   creatorId: number;
   receiverId: number;
-  projectId: number;
+  projectId: number | null;
   taskId: number | null;
   isRead: boolean;
   createdAt: Date;

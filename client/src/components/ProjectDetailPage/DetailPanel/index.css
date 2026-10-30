@@ -98,7 +98,7 @@
 
 .project-panel-info {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -129,6 +129,13 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.project-panel-creator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .project-panel-member-count {

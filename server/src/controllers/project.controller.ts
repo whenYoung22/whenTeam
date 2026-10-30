@@ -1,7 +1,14 @@
 import type { RequestHandler } from "express";
 
 import { getProjectOverview } from "../services/project-overview.service.js";
-import { createProject, getProject, getProjects, setProjectFavorite, updateProject } from "../services/project.service.js";
+import {
+  createProject,
+  deleteProject,
+  getProject,
+  getProjects,
+  setProjectFavorite,
+  updateProject,
+} from "../services/project.service.js";
 
 import { createProjectSchema, updateProjectSchema } from "../validations/project.validation.js";
 
@@ -89,6 +96,23 @@ export const updateProjectController: RequestHandler = async (
       input,
     );
     sendSuccess(res, project);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** DELETE /api/projects/:projectId：删除项目及其关联数据。 */
+export const deleteProjectController: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    await deleteProject(
+      res.locals.userId as number,
+      parseProjectId(req.params.projectId),
+    );
+    sendSuccess(res, null);
   } catch (error) {
     next(error);
   }

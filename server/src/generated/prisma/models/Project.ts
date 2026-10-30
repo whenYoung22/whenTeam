@@ -387,6 +387,11 @@ export type ProjectUncheckedUpdateManyInput = {
   creatorId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type ProjectNullableScalarRelationFilter = {
+  is?: Prisma.ProjectWhereInput | null
+  isNot?: Prisma.ProjectWhereInput | null
+}
+
 export type ProjectScalarRelationFilter = {
   is?: Prisma.ProjectWhereInput
   isNot?: Prisma.ProjectWhereInput
@@ -454,10 +459,12 @@ export type ProjectCreateNestedOneWithoutNotificationsInput = {
   connect?: Prisma.ProjectWhereUniqueInput
 }
 
-export type ProjectUpdateOneRequiredWithoutNotificationsNestedInput = {
+export type ProjectUpdateOneWithoutNotificationsNestedInput = {
   create?: Prisma.XOR<Prisma.ProjectCreateWithoutNotificationsInput, Prisma.ProjectUncheckedCreateWithoutNotificationsInput>
   connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutNotificationsInput
   upsert?: Prisma.ProjectUpsertWithoutNotificationsInput
+  disconnect?: Prisma.ProjectWhereInput | boolean
+  delete?: Prisma.ProjectWhereInput | boolean
   connect?: Prisma.ProjectWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutNotificationsInput, Prisma.ProjectUpdateWithoutNotificationsInput>, Prisma.ProjectUncheckedUpdateWithoutNotificationsInput>
 }

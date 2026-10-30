@@ -12,6 +12,11 @@ type ProjectDetailData = {
   createdAt: Date;
   dueDate: Date;
   tasks: ProjectTaskStatus[];
+  creator: {
+    id: number;
+    name: string;
+    avatarUrl: string | null;
+  };
   members: {
     user: {
       id: number;
@@ -67,6 +72,7 @@ export function toProjectDetailResponse(
     progress,
     taskCount,
     isFavorite,
+    creator: toUserSummary(project.creator),
     members: project.members.map(({ user }) => toUserSummary(user)),
   };
 }

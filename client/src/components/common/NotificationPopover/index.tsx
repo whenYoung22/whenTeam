@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { Badge, Button, Empty, List, message, Popover, Spin, Typography } from "antd";
 
-import { getNotifications, getUnreadNotificationCount, markAllNotificationsRead, markNotificationRead } from "@/api/notification";
+import {
+  getNotifications,
+  getUnreadNotificationCount,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/api/notification";
 
 import type { Notification } from "@shared/index";
+import { subscribeToNotificationChanges } from "@/utils/notificationEvents";
 
 import "./index.css";
 
@@ -16,12 +22,36 @@ export default function NotificationPopover() {
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const loadRequestId = useRef(0);
+  const notificationRefreshReceived = useRef(false);
+
+  const loadNotifications = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
+    setLoading(true);
+    try {
+      const result = await getNotifications();
+      if (requestId === loadRequestId.current) {
+        setNotifications(result.items);
+        setUnreadCount(result.unreadCount);
+      }
+    } catch (error) {
+      if (requestId === loadRequestId.current) {
+        message.error(
+          error instanceof Error ? error.message : "获取通知列表失败",
+        );
+      }
+    } finally {
+      if (requestId === loadRequestId.current) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
     getUnreadNotificationCount()
       .then((count) => {
-        if (active) setUnreadCount(count);
+        if (active && !notificationRefreshReceived.current) {
+          setUnreadCount(count);
+        }
       })
       .catch((error: unknown) => {
         if (active) {
@@ -36,20 +66,14 @@ export default function NotificationPopover() {
     };
   }, []);
 
-  const loadNotifications = async () => {
-    setLoading(true);
-    try {
-      const result = await getNotifications();
-      setNotifications(result.items);
-      setUnreadCount(result.unreadCount);
-    } catch (error) {
-      message.error(
-        error instanceof Error ? error.message : "获取通知列表失败",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(
+    () =>
+      subscribeToNotificationChanges(() => {
+        notificationRefreshReceived.current = true;
+        void loadNotifications();
+      }),
+    [loadNotifications],
+  );
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -69,6 +93,14 @@ export default function NotificationPopover() {
       }
 
       setOpen(false);
+      if (
+        notification.type === "PROJECT_DELETED" ||
+        notification.projectId === null
+      ) {
+        message.info("该项目已删除");
+        return;
+      }
+
       const taskQuery =
         notification.taskId === null ? "" : `?taskId=${notification.taskId}`;
       navigate(`/projects/${notification.projectId}${taskQuery}`);

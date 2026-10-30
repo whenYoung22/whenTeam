@@ -19,6 +19,9 @@ const projectDetailInclude = {
   tasks: {
     select: { status: true },
   },
+  creator: {
+    select: { id: true, name: true, avatarUrl: true },
+  },
   members: {
     select: {
       user: {
@@ -330,5 +333,46 @@ export async function updateProject(
     });
 
     return toProjectDetailResponse(project, favorite !== null);
+  });
+}
+
+/** Delete a project and its related data; only the project creator may do so. */
+export async function deleteProject(
+  userId: number,
+  projectId: number,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const project = await tx.project.findUnique({
+      where: { id: projectId },
+      select: {
+        creatorId: true,
+        name: true,
+        members: { select: { userId: true } },
+      },
+    });
+
+    if (!project) {
+      throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+    }
+
+    if (project.creatorId !== userId) {
+      throw new AppError(403, "PROJECT_FORBIDDEN", "只有项目创建者可以删除项目");
+    }
+
+    await tx.notification.deleteMany({ where: { projectId } });
+    await createNotifications(
+      tx,
+      project.members
+        .map(({ userId: receiverId }) => receiverId)
+        .filter((receiverId) => receiverId !== userId)
+        .map((receiverId) => ({
+          type: NotificationType.PROJECT_DELETED,
+          content: `删除了项目「${project.name}」`,
+          creatorId: userId,
+          receiverId,
+          projectId: null,
+        })),
+    );
+    await tx.project.delete({ where: { id: projectId } });
   });
 }

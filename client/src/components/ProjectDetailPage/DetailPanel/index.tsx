@@ -1,6 +1,23 @@
 import { useState } from "react";
-import { Avatar, Button, message, Progress, Tooltip } from "antd";
-import { CalendarOutlined, CheckSquareOutlined, ClockCircleOutlined, EllipsisOutlined, StarFilled, StarOutlined, TeamOutlined } from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  message,
+  Modal,
+  Progress,
+  Tooltip,
+} from "antd";
+import {
+  CalendarOutlined,
+  CheckSquareOutlined,
+  ClockCircleOutlined,
+  EllipsisOutlined,
+  StarFilled,
+  StarOutlined,
+  TeamOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import type { ProjectDetailResponse } from "@shared/index";
 import EditProjectModal from "@/components/ProjectDetailPage/EditProjectModal";
 import "./index.css";
@@ -26,6 +43,7 @@ function getMutedProjectColor(color: string): string {
 interface DetailPanelProps {
   project: ProjectDetailResponse;
   onSave: (project: ProjectDetailResponse) => void;
+  onDelete: () => Promise<void>;
   onFavoriteToggle: () => void;
   favoritePending: boolean;
 }
@@ -33,6 +51,7 @@ interface DetailPanelProps {
 export default function DetailPanel({
   project,
   onSave,
+  onDelete,
   onFavoriteToggle,
   favoritePending,
 }: DetailPanelProps) {
@@ -73,14 +92,39 @@ export default function DetailPanel({
             loading={favoritePending}
             onClick={onFavoriteToggle}
           />
-          <Button
-            type="text"
-            className="project-panel-edit-button"
-            icon={<EllipsisOutlined />}
-            aria-label="编辑项目"
-            title="编辑项目"
-            onClick={() => setEditOpen(true)}
-          />
+          <Dropdown
+            menu={{
+              items: [
+                { key: "edit", label: "编辑项目" },
+                { key: "delete", label: "删除项目", danger: true },
+              ],
+              onClick: ({ key }) => {
+                if (key === "edit") {
+                  setEditOpen(true);
+                  return;
+                }
+
+                Modal.confirm({
+                  title: "删除项目",
+                  content:
+                    "删除后，项目中的任务、成员关系和通知也会被删除，且无法恢复。确认删除？",
+                  okText: "删除",
+                  okButtonProps: { danger: true },
+                  cancelText: "取消",
+                  onOk: onDelete,
+                });
+              },
+            }}
+            trigger={["click"]}
+          >
+            <Button
+              type="text"
+              className="project-panel-edit-button"
+              icon={<EllipsisOutlined />}
+              aria-label="项目操作"
+              title="项目操作"
+            />
+          </Dropdown>
         </div>
       </div>
 
@@ -111,6 +155,26 @@ export default function DetailPanel({
           <span className="project-panel-info-value">
             {project.taskCount} 个任务
           </span>
+        </div>
+
+
+        <div className="project-panel-info-item">
+          <div className="project-panel-info-label">
+            <UserOutlined />
+            <span>项目创建者</span>
+          </div>
+          <div className="project-panel-creator">
+            <Avatar
+              size="small"
+              src={project.creator.avatarUrl}
+              style={{ backgroundColor: "#b4b9c7", fontSize: 12 }}
+            >
+              {project.creator.name.slice(0, 1)}
+            </Avatar>
+            <span className="project-panel-info-value">
+              {project.creator.name}
+            </span>
+          </div>
         </div>
 
         <div className="project-panel-info-item">

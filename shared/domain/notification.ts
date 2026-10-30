@@ -6,12 +6,14 @@ export interface Notification {
     | "TASK_ASSIGNED"
     | "TASK_STATUS_CHANGED"
     | "PROJECT_MEMBER_ADDED"
-    | "PROJECT_MEMBER_REMOVED";
+    | "PROJECT_MEMBER_REMOVED"
+    | "TASK_DELETED"
+    | "PROJECT_DELETED";
   creatorId: number;
   creatorName: string;
   receiverId: number;
   content: string;
-  projectId: number;
+  projectId: number | null;
   taskId: number | null;
   isRead: boolean;
   createdAt: IsoDateTime;

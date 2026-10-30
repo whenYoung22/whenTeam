@@ -6,6 +6,7 @@ import type {
 } from "@shared/index";
 import {
   createProjectTask,
+  deleteTask as deleteTaskRequest,
   updateTask as updateTaskRequest,
 } from "@/api/task";
 
@@ -38,5 +39,11 @@ export default function useTaskMutations() {
     [runMutation],
   );
 
-  return { createTask, updateTask, isPending: pendingCount > 0 };
+  const deleteTask = useCallback(
+    (taskId: number): Promise<void> =>
+      runMutation(() => deleteTaskRequest(taskId)),
+    [runMutation],
+  );
+
+  return { createTask, updateTask, deleteTask, isPending: pendingCount > 0 };
 }

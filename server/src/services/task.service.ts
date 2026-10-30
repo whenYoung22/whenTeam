@@ -254,6 +254,77 @@ export async function updateTask(
   return toTaskResponse(task);
 }
 
+/** Delete a task; only its assignee or the project creator may do so. */
+export async function deleteTask(userId: number, taskId: number): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const task = await tx.task.findFirst({
+      where: {
+        id: taskId,
+        project: {
+          members: {
+            some: { userId },
+          },
+        },
+      },
+      select: {
+        assigneeId: true,
+        title: true,
+        project: {
+          select: {
+            id: true,
+            creatorId: true,
+            members: { select: { userId: true } },
+          },
+        },
+      },
+    });
+    if (!task) {
+      throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
+    }
+
+    if (task.assigneeId !== userId && task.project.creatorId !== userId) {
+      throw new AppError(
+        403,
+        "TASK_FORBIDDEN",
+        "只有项目创建者或任务负责人可以删除任务",
+      );
+    }
+
+    await tx.notification.deleteMany({ where: { taskId } });
+    await createNotifications(
+      tx,
+      task.project.members
+        .map(({ userId: receiverId }) => receiverId)
+        .filter((receiverId) => receiverId !== userId)
+        .map((receiverId) => ({
+          type: NotificationType.TASK_DELETED,
+          content: `删除了任务「${task.title}」`,
+          creatorId: userId,
+          receiverId,
+          projectId: task.project.id,
+        })),
+    );
+
+    const result = await tx.task.deleteMany({
+      where: {
+        id: taskId,
+        project: {
+          members: {
+            some: { userId },
+          },
+        },
+        OR: [
+          { assigneeId: userId },
+          { project: { creatorId: userId } },
+        ],
+      },
+    });
+    if (result.count === 0) {
+      throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
+    }
+  });
+}
+
 function statusLabel(status: string): string {
   switch (status) {
     case "TODO":

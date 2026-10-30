@@ -227,7 +227,7 @@ export type NotificationGroupByOutputType = {
   createdAt: Date
   creatorId: number
   receiverId: number
-  projectId: number
+  projectId: number | null
   taskId: number | null
   _count: NotificationCountAggregateOutputType | null
   _avg: NotificationAvgAggregateOutputType | null
@@ -262,11 +262,11 @@ export type NotificationWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
   creatorId?: Prisma.IntFilter<"Notification"> | number
   receiverId?: Prisma.IntFilter<"Notification"> | number
-  projectId?: Prisma.IntFilter<"Notification"> | number
+  projectId?: Prisma.IntNullableFilter<"Notification"> | number | null
   taskId?: Prisma.IntNullableFilter<"Notification"> | number | null
   creator?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   receiver?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
+  project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
   task?: Prisma.XOR<Prisma.TaskNullableScalarRelationFilter, Prisma.TaskWhereInput> | null
 }
 
@@ -278,7 +278,7 @@ export type NotificationOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
   receiverId?: Prisma.SortOrder
-  projectId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrderInput | Prisma.SortOrder
   taskId?: Prisma.SortOrderInput | Prisma.SortOrder
   creator?: Prisma.UserOrderByWithRelationInput
   receiver?: Prisma.UserOrderByWithRelationInput
@@ -298,11 +298,11 @@ export type NotificationWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
   creatorId?: Prisma.IntFilter<"Notification"> | number
   receiverId?: Prisma.IntFilter<"Notification"> | number
-  projectId?: Prisma.IntFilter<"Notification"> | number
+  projectId?: Prisma.IntNullableFilter<"Notification"> | number | null
   taskId?: Prisma.IntNullableFilter<"Notification"> | number | null
   creator?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   receiver?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
+  project?: Prisma.XOR<Prisma.ProjectNullableScalarRelationFilter, Prisma.ProjectWhereInput> | null
   task?: Prisma.XOR<Prisma.TaskNullableScalarRelationFilter, Prisma.TaskWhereInput> | null
 }, "id">
 
@@ -314,7 +314,7 @@ export type NotificationOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
   receiverId?: Prisma.SortOrder
-  projectId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrderInput | Prisma.SortOrder
   taskId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.NotificationCountOrderByAggregateInput
   _avg?: Prisma.NotificationAvgOrderByAggregateInput
@@ -334,7 +334,7 @@ export type NotificationScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Notification"> | Date | string
   creatorId?: Prisma.IntWithAggregatesFilter<"Notification"> | number
   receiverId?: Prisma.IntWithAggregatesFilter<"Notification"> | number
-  projectId?: Prisma.IntWithAggregatesFilter<"Notification"> | number
+  projectId?: Prisma.IntNullableWithAggregatesFilter<"Notification"> | number | null
   taskId?: Prisma.IntNullableWithAggregatesFilter<"Notification"> | number | null
 }
 
@@ -345,7 +345,7 @@ export type NotificationCreateInput = {
   createdAt?: Date | string
   creator: Prisma.UserCreateNestedOneWithoutCreatedNotificationsInput
   receiver: Prisma.UserCreateNestedOneWithoutReceivedNotificationsInput
-  project: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
+  project?: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
   task?: Prisma.TaskCreateNestedOneWithoutNotificationsInput
 }
 
@@ -357,7 +357,7 @@ export type NotificationUncheckedCreateInput = {
   createdAt?: Date | string
   creatorId: number
   receiverId: number
-  projectId: number
+  projectId?: number | null
   taskId?: number | null
 }
 
@@ -368,7 +368,7 @@ export type NotificationUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creator?: Prisma.UserUpdateOneRequiredWithoutCreatedNotificationsNestedInput
   receiver?: Prisma.UserUpdateOneRequiredWithoutReceivedNotificationsNestedInput
-  project?: Prisma.ProjectUpdateOneRequiredWithoutNotificationsNestedInput
+  project?: Prisma.ProjectUpdateOneWithoutNotificationsNestedInput
   task?: Prisma.TaskUpdateOneWithoutNotificationsNestedInput
 }
 
@@ -380,7 +380,7 @@ export type NotificationUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.IntFieldUpdateOperationsInput | number
   receiverId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -392,7 +392,7 @@ export type NotificationCreateManyInput = {
   createdAt?: Date | string
   creatorId: number
   receiverId: number
-  projectId: number
+  projectId?: number | null
   taskId?: number | null
 }
 
@@ -411,7 +411,7 @@ export type NotificationUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.IntFieldUpdateOperationsInput | number
   receiverId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -725,7 +725,7 @@ export type NotificationScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Notification"> | Date | string
   creatorId?: Prisma.IntFilter<"Notification"> | number
   receiverId?: Prisma.IntFilter<"Notification"> | number
-  projectId?: Prisma.IntFilter<"Notification"> | number
+  projectId?: Prisma.IntNullableFilter<"Notification"> | number | null
   taskId?: Prisma.IntNullableFilter<"Notification"> | number | null
 }
 
@@ -736,7 +736,7 @@ export type NotificationCreateWithoutTaskInput = {
   createdAt?: Date | string
   creator: Prisma.UserCreateNestedOneWithoutCreatedNotificationsInput
   receiver: Prisma.UserCreateNestedOneWithoutReceivedNotificationsInput
-  project: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
+  project?: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
 }
 
 export type NotificationUncheckedCreateWithoutTaskInput = {
@@ -747,7 +747,7 @@ export type NotificationUncheckedCreateWithoutTaskInput = {
   createdAt?: Date | string
   creatorId: number
   receiverId: number
-  projectId: number
+  projectId?: number | null
 }
 
 export type NotificationCreateOrConnectWithoutTaskInput = {
@@ -782,7 +782,7 @@ export type NotificationCreateWithoutCreatorInput = {
   isRead?: boolean
   createdAt?: Date | string
   receiver: Prisma.UserCreateNestedOneWithoutReceivedNotificationsInput
-  project: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
+  project?: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
   task?: Prisma.TaskCreateNestedOneWithoutNotificationsInput
 }
 
@@ -793,7 +793,7 @@ export type NotificationUncheckedCreateWithoutCreatorInput = {
   isRead?: boolean
   createdAt?: Date | string
   receiverId: number
-  projectId: number
+  projectId?: number | null
   taskId?: number | null
 }
 
@@ -813,7 +813,7 @@ export type NotificationCreateWithoutReceiverInput = {
   isRead?: boolean
   createdAt?: Date | string
   creator: Prisma.UserCreateNestedOneWithoutCreatedNotificationsInput
-  project: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
+  project?: Prisma.ProjectCreateNestedOneWithoutNotificationsInput
   task?: Prisma.TaskCreateNestedOneWithoutNotificationsInput
 }
 
@@ -824,7 +824,7 @@ export type NotificationUncheckedCreateWithoutReceiverInput = {
   isRead?: boolean
   createdAt?: Date | string
   creatorId: number
-  projectId: number
+  projectId?: number | null
   taskId?: number | null
 }
 
@@ -921,7 +921,7 @@ export type NotificationCreateManyTaskInput = {
   createdAt?: Date | string
   creatorId: number
   receiverId: number
-  projectId: number
+  projectId?: number | null
 }
 
 export type NotificationUpdateWithoutTaskInput = {
@@ -931,7 +931,7 @@ export type NotificationUpdateWithoutTaskInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creator?: Prisma.UserUpdateOneRequiredWithoutCreatedNotificationsNestedInput
   receiver?: Prisma.UserUpdateOneRequiredWithoutReceivedNotificationsNestedInput
-  project?: Prisma.ProjectUpdateOneRequiredWithoutNotificationsNestedInput
+  project?: Prisma.ProjectUpdateOneWithoutNotificationsNestedInput
 }
 
 export type NotificationUncheckedUpdateWithoutTaskInput = {
@@ -942,7 +942,7 @@ export type NotificationUncheckedUpdateWithoutTaskInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.IntFieldUpdateOperationsInput | number
   receiverId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type NotificationUncheckedUpdateManyWithoutTaskInput = {
@@ -953,7 +953,7 @@ export type NotificationUncheckedUpdateManyWithoutTaskInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.IntFieldUpdateOperationsInput | number
   receiverId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type NotificationCreateManyCreatorInput = {
@@ -963,7 +963,7 @@ export type NotificationCreateManyCreatorInput = {
   isRead?: boolean
   createdAt?: Date | string
   receiverId: number
-  projectId: number
+  projectId?: number | null
   taskId?: number | null
 }
 
@@ -974,7 +974,7 @@ export type NotificationCreateManyReceiverInput = {
   isRead?: boolean
   createdAt?: Date | string
   creatorId: number
-  projectId: number
+  projectId?: number | null
   taskId?: number | null
 }
 
@@ -984,7 +984,7 @@ export type NotificationUpdateWithoutCreatorInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   receiver?: Prisma.UserUpdateOneRequiredWithoutReceivedNotificationsNestedInput
-  project?: Prisma.ProjectUpdateOneRequiredWithoutNotificationsNestedInput
+  project?: Prisma.ProjectUpdateOneWithoutNotificationsNestedInput
   task?: Prisma.TaskUpdateOneWithoutNotificationsNestedInput
 }
 
@@ -995,7 +995,7 @@ export type NotificationUncheckedUpdateWithoutCreatorInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   receiverId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -1006,7 +1006,7 @@ export type NotificationUncheckedUpdateManyWithoutCreatorInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   receiverId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -1016,7 +1016,7 @@ export type NotificationUpdateWithoutReceiverInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creator?: Prisma.UserUpdateOneRequiredWithoutCreatedNotificationsNestedInput
-  project?: Prisma.ProjectUpdateOneRequiredWithoutNotificationsNestedInput
+  project?: Prisma.ProjectUpdateOneWithoutNotificationsNestedInput
   task?: Prisma.TaskUpdateOneWithoutNotificationsNestedInput
 }
 
@@ -1027,7 +1027,7 @@ export type NotificationUncheckedUpdateWithoutReceiverInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -1038,7 +1038,7 @@ export type NotificationUncheckedUpdateManyWithoutReceiverInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creatorId?: Prisma.IntFieldUpdateOperationsInput | number
-  projectId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -1056,7 +1056,7 @@ export type NotificationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   taskId?: boolean
   creator?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   receiver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
+  project?: boolean | Prisma.Notification$projectArgs<ExtArgs>
   task?: boolean | Prisma.Notification$taskArgs<ExtArgs>
 }, ExtArgs["result"]["notification"]>
 
@@ -1078,7 +1078,7 @@ export type NotificationOmit<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type NotificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   creator?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   receiver?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
+  project?: boolean | Prisma.Notification$projectArgs<ExtArgs>
   task?: boolean | Prisma.Notification$taskArgs<ExtArgs>
 }
 
@@ -1087,7 +1087,7 @@ export type $NotificationPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     creator: Prisma.$UserPayload<ExtArgs>
     receiver: Prisma.$UserPayload<ExtArgs>
-    project: Prisma.$ProjectPayload<ExtArgs>
+    project: Prisma.$ProjectPayload<ExtArgs> | null
     task: Prisma.$TaskPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1098,7 +1098,7 @@ export type $NotificationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     createdAt: Date
     creatorId: number
     receiverId: number
-    projectId: number
+    projectId: number | null
     taskId: number | null
   }, ExtArgs["result"]["notification"]>
   composites: {}
@@ -1442,7 +1442,7 @@ export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   creator<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   receiver<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  project<T extends Prisma.Notification$projectArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notification$projectArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   task<T extends Prisma.Notification$taskArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notification$taskArgs<ExtArgs>>): Prisma.Prisma__TaskClient<runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1827,6 +1827,25 @@ export type NotificationDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many Notifications to delete.
    */
   limit?: number
+}
+
+/**
+ * Notification.project
+ */
+export type Notification$projectArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Project
+   */
+  select?: Prisma.ProjectSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Project
+   */
+  omit?: Prisma.ProjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProjectInclude<ExtArgs> | null
+  where?: Prisma.ProjectWhereInput
 }
 
 /**

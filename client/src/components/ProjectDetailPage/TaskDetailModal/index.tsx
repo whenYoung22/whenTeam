@@ -1,5 +1,15 @@
 import { useEffect } from "react";
-import { DatePicker, Form, Input, message, Modal, Select } from "antd";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Select,
+} from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import useTaskMutations from "@/hooks/useTaskMutations";
@@ -28,6 +38,8 @@ interface TaskDetailModalProps {
   onClose: () => void;
   /** 保存成功后由页面更新本地数据 */
   onSave: (task: TaskResponse) => void;
+  /** 删除成功后由页面更新本地数据 */
+  onDelete: (taskId: number) => void;
 }
 
 const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
@@ -48,9 +60,10 @@ export default function TaskDetailModal({
   projectMembers,
   onClose,
   onSave,
+  onDelete,
 }: TaskDetailModalProps) {
   const [form] = Form.useForm<TaskFormValues>();
-  const { updateTask, isPending } = useTaskMutations();
+  const { updateTask, deleteTask, isPending } = useTaskMutations();
   const assigneeOptions = projectMembers.map((member) => ({
     label: member.name,
     value: member.id,
@@ -104,15 +117,54 @@ export default function TaskDetailModal({
     onClose();
   };
 
+  const handleDelete = async () => {
+    if (!task) return;
+    try {
+      await deleteTask(task.id);
+      onDelete(task.id);
+      message.success("任务已删除");
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : "删除任务失败，请重试",
+      );
+    }
+  };
+
   return (
     <Modal
       title="任务详情"
       open={!!task}
-      onOk={handleSave}
-      confirmLoading={isPending}
       onCancel={handleCancel}
-      okText="保存"
-      cancelText="取消"
+      footer={
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Popconfirm
+            title="删除任务"
+            description="删除后无法恢复，确定删除此任务吗？"
+            okText="删除"
+            okButtonProps={{ danger: true, loading: isPending }}
+            cancelText="取消"
+            onConfirm={handleDelete}
+          >
+            <Button danger icon={<DeleteOutlined />} disabled={isPending}>
+              删除任务
+            </Button>
+          </Popconfirm>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button onClick={handleCancel} disabled={isPending}>
+              取消
+            </Button>
+            <Button type="primary" onClick={handleSave} loading={isPending}>
+              保存
+            </Button>
+          </div>
+        </div>
+      }
       mask={{ closable: false }}
       keyboard={false} // 禁止 esc 关闭弹窗，避免误操作
       destroyOnHidden // 关闭后销毁表单，避免残留上一次的值

@@ -5,6 +5,7 @@ import type {
   UpdateTaskRequest,
 } from "@shared/index";
 import apiClient from "@/service/apiClient";
+import { notifyNotificationsChanged } from "@/utils/notificationEvents";
 
 
 // 获取项目里的任务列表
@@ -41,4 +42,10 @@ export async function updateTask(
     request,
   );
   return response.data.data;
+}
+
+// 删除项目里的任务
+export async function deleteTask(taskId: number): Promise<void> {
+  await apiClient.delete<ApiSuccessResponse<null>>(`/api/tasks/${taskId}`);
+  notifyNotificationsChanged();
 }

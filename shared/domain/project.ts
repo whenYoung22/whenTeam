@@ -30,6 +30,7 @@ export interface ProjectDetailResponse extends Project {
   progress: number;
   taskCount: number;
   isFavorite: boolean;
+  creator: UserSummary;
   members: UserSummary[];
 }
 

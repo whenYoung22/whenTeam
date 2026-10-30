@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { Alert, Button, Empty, message, Spin } from "antd";
 
@@ -12,11 +12,12 @@ import useProjectDetailData from "@/hooks/useProjectDetailData";
 
 import useProjectStore from "@/stores/projectStore";
 
-import { setProjectFavorite } from "@/api/project";
+import { deleteProject, setProjectFavorite } from "@/api/project";
 
 import type { ProjectDetailResponse, TaskResponse } from "@shared/index";
 
 export default function ProjectDetailPage() {
+  const navigate = useNavigate();
   const { projectId } = useParams();
   const id = Number(projectId);
   const isValidId = Number.isSafeInteger(id) && id > 0;
@@ -62,6 +63,7 @@ export default function ProjectDetailPage() {
       key={id}
       initialProject={project}
       initialTasks={tasks}
+      onProjectDeleted={() => navigate("/", { replace: true })}
     />
   );
 }
@@ -69,13 +71,16 @@ export default function ProjectDetailPage() {
 interface ProjectDetailContentProps {
   initialProject: ProjectDetailResponse;
   initialTasks: TaskResponse[];
+  onProjectDeleted: () => void;
 }
 
 function ProjectDetailContent({
   initialProject,
   initialTasks,
+  onProjectDeleted,
 }: ProjectDetailContentProps) {
   const updateProject = useProjectStore((state) => state.updateProject);
+  const removeProject = useProjectStore((state) => state.removeProject);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -132,6 +137,20 @@ function ProjectDetailContent({
     }
   };
 
+  const handleProjectDelete = async () => {
+    try {
+      await deleteProject(project.id);
+      removeProject(project.id);
+      message.success("项目已删除");
+      onProjectDeleted();
+    } catch (error) {
+      message.error(
+        error instanceof Error ? error.message : "删除项目失败，请重试",
+      );
+      throw error;
+    }
+  };
+
   const handleTaskCreated = (task: TaskResponse) => {
     const updatedTasks = [...tasks, task].sort(
       (a, b) =>
@@ -150,6 +169,13 @@ function ProjectDetailContent({
           a.dueDate.localeCompare(b.dueDate) ||
           b.createdAt.localeCompare(a.createdAt),
       );
+    setTasks(updatedTasks);
+    updateTaskMetrics(updatedTasks);
+    clearTaskSelection();
+  };
+
+  const handleTaskDelete = (taskId: number) => {
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
     setTasks(updatedTasks);
     updateTaskMetrics(updatedTasks);
     clearTaskSelection();
@@ -179,6 +205,7 @@ function ProjectDetailContent({
       <DetailPanel
         project={project}
         onSave={handleSaveProject}
+        onDelete={handleProjectDelete}
         onFavoriteToggle={handleFavoriteToggle}
         favoritePending={favoritePending}
       />
@@ -204,6 +231,7 @@ function ProjectDetailContent({
         projectMembers={project.members}
         onClose={clearTaskSelection}
         onSave={handleTaskSave}
+        onDelete={handleTaskDelete}
       />
     </section>
   );

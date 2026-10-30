@@ -7,6 +7,7 @@ import type {
   UpdateProjectRequest,
 } from "@shared/index";
 import apiClient from "@/service/apiClient";
+import { notifyNotificationsChanged } from "@/utils/notificationEvents";
 
 // 查询项目列表 projectList
 export async function getProjects(): Promise<ProjectListItem[]> {
@@ -52,6 +53,14 @@ export async function updateProject(
     ApiSuccessResponse<ProjectDetailResponse>
   >(`/api/projects/${projectId}`, request);
   return response.data.data;
+}
+
+// 删除项目
+export async function deleteProject(projectId: number): Promise<void> {
+  await apiClient.delete<ApiSuccessResponse<null>>(
+    `/api/projects/${projectId}`,
+  );
+  notifyNotificationsChanged();
 }
 
 // Set whether the current user has favorited a project.

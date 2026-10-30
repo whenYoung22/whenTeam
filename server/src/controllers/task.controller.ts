@@ -3,6 +3,7 @@ import { AppError } from "../utils/AppError.util.js";
 import { sendSuccess } from "../utils/response.util.js";
 import {
   createProjectTask,
+  deleteTask,
   getProjectTasks,
   updateTask,
 } from "../services/task.service.js";
@@ -83,6 +84,19 @@ export const updateTaskController: RequestHandler = async (req, res, next) => {
       input,
     );
     sendSuccess(res, task);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/** DELETE /api/tasks/:taskId：删除任务。 */
+export const deleteTaskController: RequestHandler = async (req, res, next) => {
+  try {
+    await deleteTask(
+      res.locals.userId as number,
+      parseTaskId(req.params.taskId),
+    );
+    sendSuccess(res, null);
   } catch (error) {
     next(error);
   }

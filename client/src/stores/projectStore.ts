@@ -9,6 +9,7 @@ interface ProjectStore {
   error: string | null;
   loadProjects: () => Promise<void>;
   addProject: (project: ProjectListItem) => void;
+  removeProject: (projectId: number) => void;
   updateProject: (
     projectId: number,
     updates: Partial<Omit<ProjectListItem, "id">>,
@@ -52,6 +53,10 @@ const useProjectStore = create<ProjectStore>((set) => ({
   },
   addProject: (project) =>
     set((state) => ({ projects: [project, ...state.projects] })),
+  removeProject: (projectId) =>
+    set((state) => ({
+      projects: state.projects.filter((project) => project.id !== projectId),
+    })),
   updateProject: (projectId, updates) =>
     set((state) => ({
       projects: state.projects.map((project) =>

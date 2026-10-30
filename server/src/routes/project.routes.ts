@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createProjectController,
+  deleteProjectController,
   favoriteProjectController,
   getProjectController,
   getProjectOverviewController,
@@ -32,5 +33,8 @@ router.get("/:projectId", getProjectController);
 
 // PATCH /api/projects/:projectId 更新项目信息
 router.patch("/:projectId", updateProjectController);
+
+// DELETE /api/projects/:projectId 删除项目
+router.delete("/:projectId", deleteProjectController);
 
 export default router;

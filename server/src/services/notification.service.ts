@@ -11,7 +11,7 @@ type NewNotification = {
   content: string;
   creatorId: number;
   receiverId: number;
-  projectId: number;
+  projectId: number | null;
   taskId?: number | null;
 };
 
