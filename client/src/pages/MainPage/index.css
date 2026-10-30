@@ -20,7 +20,6 @@
 
 .main-page-content {
   flex: 1;
-  min-height: 0;
   margin: 0 auto;
   padding: 32px;
   width: 85%;

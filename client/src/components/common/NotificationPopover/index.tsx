@@ -4,12 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { Badge, Button, Empty, List, message, Popover, Spin, Typography } from "antd";
 
-import {
-  getNotifications,
-  getUnreadNotificationCount,
-  markAllNotificationsRead,
-  markNotificationRead,
-} from "@/api/notification";
+import { getNotifications, getUnreadNotificationCount, markAllNotificationsRead, markNotificationRead } from "@/api/notification";
 
 import type { Notification } from "@shared/index";
 import { subscribeToNotificationChanges } from "@/utils/notificationEvents";
@@ -18,18 +13,21 @@ import "./index.css";
 
 export default function NotificationPopover() {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const loadRequestId = useRef(0);
-  const notificationRefreshReceived = useRef(false);
 
+  const [open, setOpen] = useState(false);                       // Popover 开合
+  const [loading, setLoading] = useState(false);                 // 列表加载态
+  const [unreadCount, setUnreadCount] = useState(0);             // 角标数字
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const loadRequestId = useRef(0);                              // 请求序号，防竞态
+  const notificationRefreshReceived = useRef(false);            // 是否已收到过 WS 刷新信号
+
+  // 带请求序号的防竞态加载；拉取通知数据
   const loadNotifications = useCallback(async () => {
-    const requestId = ++loadRequestId.current;
+    const requestId = ++loadRequestId.current; // 每次调用递增
     setLoading(true);
     try {
-      const result = await getNotifications();
+      const result = await getNotifications();   //拉取通知
+      // 只有最新请求才写回
       if (requestId === loadRequestId.current) {
         setNotifications(result.items);
         setUnreadCount(result.unreadCount);
@@ -45,6 +43,7 @@ export default function NotificationPopover() {
     }
   }, []);
 
+  // 首次挂载：拉未读数（带兜底保护）
   useEffect(() => {
     let active = true;
     getUnreadNotificationCount()
@@ -66,6 +65,7 @@ export default function NotificationPopover() {
     };
   }, []);
 
+  // 订阅 WS 信号 收到"通知变了"就 loadNotifications() 重拉
   useEffect(
     () =>
       subscribeToNotificationChanges(() => {
@@ -75,16 +75,19 @@ export default function NotificationPopover() {
     [loadNotifications],
   );
 
+  // 打开 Popover 时加载
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
     if (nextOpen) void loadNotifications();
   };
 
+  // 点击单条通知：乐观更新 + 跳转； 先等接口成功，再更新本地状态
   const handleNotificationClick = async (notification: Notification) => {
     try {
       await markNotificationRead(notification.id);
       if (!notification.isRead) {
-        setUnreadCount((count) => Math.max(0, count - 1));
+        // 只有未读才减
+        setUnreadCount((count) => Math.max(0, count - 1));  // 防负数
         setNotifications((items) =>
           items.map((item) =>
             item.id === notification.id ? { ...item, isRead: true } : item,
@@ -93,6 +96,8 @@ export default function NotificationPopover() {
       }
 
       setOpen(false);
+
+      // 项目已删除 / 无项目 → 只提示不跳
       if (
         notification.type === "PROJECT_DELETED" ||
         notification.projectId === null
@@ -111,6 +116,7 @@ export default function NotificationPopover() {
     }
   };
 
+  // 全部已读
   const handleMarkAllRead = async () => {
     try {
       await markAllNotificationsRead();

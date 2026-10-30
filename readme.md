@@ -86,6 +86,128 @@ whenTeam/
 
 
 
+## 实战里必须知道的"坑"（重点）
+
+这些是教科书不强调、但一写就踩的：
+
+### 1. 连接是有状态的 → 服务器要管连接表
+
+每个连接是一个对象，服务器得自己维护"谁在线""这个连接属于哪个用户"。
+
+> 你代码里的 `connectionsByUserId: Map<userId, Set<WebSocket>>` 就是干这个的。HTTP 不需要，WS 必须。
+
+### 2. 需要心跳保活（ping/pong）
+
+长连接经过 NAT、负载均衡、代理时，可能被**静默掐断**，但两端 `readyState` 还显示 OPEN，你以为连着其实早断了。
+
++ 解决：服务器定时 `ping()`，客户端回 `pong`，超时没回就 `terminate()`。
++ 浏览器端 JS 拿不到 ping/pong 帧（协议层自动回），所以前端常用**应用层心跳**（定时发个 `{type:"ping"}`）。
+
+### 3. 断线重连要自己实现
+
+网络抖动、手机切后台、服务器重启都会断。**WS 没有自动重连**，前端必须写：
+
++ `onclose` 后延迟重连（指数退避）
++ 重连后**重新认证**（你代码里 token 是首条消息发的，重连就得重发）
++ 处理"重连期间漏掉的消息"（通常靠重连后拉一次全量/增量补偿）
+
+### 4. 多实例部署是最大坑
+
+`connectionsByUserId` 是**进程内存**。部署 3 个 pod：
+
++ 用户连在 A，通知由 B 产生 → B 的内存表里没这个用户 → **推不到**。
++ 解决：用 **Redis Pub/Sub / 消息队列**广播，每个实例订阅后推给自己本地连接。
+
+> 这是你这段代码上生产前**必须补**的一环。
+
+### 5. 鉴权不能只靠握手时的 Cookie/Header
+
++ 浏览器 `WebSocket` 构造函数**不能自定义 Header**，也不能方便地设 Cookie（同源会自动带）。
++ 所以常见做法就是**先连上，再用第一条消息带 token 认证**（你代码的做法），或 token 放 query（不推荐，会进日志）。
++ 必须防 **CSWSH（跨站 WebSocket 劫持）**：WS 不受同源策略保护，攻击者页面可发起连接并自动带 Cookie。所以要**校验 Origin**（你代码的 `verifyClient` 就是）。
+
+### 6. 消息没有"请求-响应"语义
+
+HTTP 有天然的"这个响应对应这个请求"。WS 是流，**你得自己在消息里加 id/type 来区分**。
+
+> 你代码里 `{type:"auth"}`、`{type:"ready"}`、`{type:"notification.created"}` 就是这个思路——**协议要自己定**。
+
+### 7. 消息大小和频率要限制
+
++ 设 `maxPayload`（你设了 1KB）防大包。
++ 限频率，防单连接刷爆服务器。
++ 注意**背压**：客户端收得慢，`bufferedAmount` 会涨，必要时断开。
+
+
+
+```
+客户端 --ws://host/ws--> WebSocketServer
+                          │
+                  verifyClient(校验 Origin)
+                          │
+                    connection 事件
+                          │
+              等待客户端发 {type:"auth", token}
+                          │
+                  verifyAccessToken(token)
+                          │
+              成功 → 存入连接表 → 回 {type:"ready"}
+              失败 → 关闭连接(code 4401)
+                          │
+             业务代码调用 publishNotificationChanges(userIds)
+                          │
+              给这些 userId 的所有连接推送 notification.created
+              
+              
+① 前端 new WebSocket("wss://host/ws")
+        │
+② 握手（HTTP Upgrade）+ 服务器校验 Origin
+        │
+③ 连上后：前端立即发 {type:"auth", token}
+        │
+④ 服务器 verifyAccessToken → 登记连接表 → 回 {type:"ready"}
+        │
+⑤ 保持：定时 ping/pong 保活
+        │
+⑥ 业务推：服务器 publish → 遍历该用户连接 send
+        │
+⑦ 断开：onclose → 前端指数退避重连 → 回到 ③
+
+
+/**********
+WebSocket 收到消息
+      │
+      ▼
+notifyNotificationsChanged()        ← 发布者（发信号）
+      │ window.dispatchEvent
+      ▼
+window 事件总线（EventTarget）
+      │
+      ▼
+subscribeToNotificationChanges(fn)  ← 订阅者（组件监听）
+      │ fn 被调用
+      ▼
+组件重新拉 HTTP 数据
+```
+
+1. **握手借 HTTP，之后是独立协议**，所以能和 HTTP 共端口。
+2. **有状态**：服务器必须自己维护连接表（按 userId 归类）。
+3. **必须心跳 + 重连 + 重连后重新认证**。
+4. **多实例要 Redis 广播**，否则跨实例推不到。
+5. **鉴权靠首条消息 + 校验 Origin**，防 CSWSH。
+
+
+
+#### 可改进点
+
+1. **心跳保活缺失**：没有 ping/pong。经过 NAT/代理的长连接可能被静默断开，`readyState` 仍显示 OPEN，推送会失败。建议加 `setInterval` 定期 `socket.ping()`，超时未 `pong` 则 `terminate()`。
+2. **单进程内存态**：`connectionsByUserId` 是进程内 Map，**多实例部署时**（如多 pod）某用户连在 A 实例，但通知由 B 实例触发 → 推不到。生产需借助 **Redis Pub/Sub 或消息队列**做跨实例广播。
+3. **`verifyClient` 的 `!origin` 放行**：安全性弱一些，若非浏览器客户端也有办法带 Origin/自定义头，可结合 token 校验在握手阶段（`upgrade` 事件）做更严的校验。
+4. **`isClientMessage` 冗余判断**：`"type" in value && value.type === "auth"` 中前半句可省（`=== "auth"` 已隐含存在），无功能问题。
+5. **错误日志无上下文**：建议日志里带上 `userId`、连接标识，便于排查。
+6. **推送无背压处理**：若客户端接收慢，`send` 会堆积在缓冲区。可检查 `socket.bufferedAmount`，超阈值则断开或丢弃。
+7. **`connectionsByUserId` 跨实例/测试隔离**：模块级全局变量在测试中会串数据，可考虑注入或提供 reset 钩子。
+
 
 
 ## 任务属性
@@ -220,4 +342,9 @@ createdAt
 
 
 
-> 
+
+
+
+
+
+
