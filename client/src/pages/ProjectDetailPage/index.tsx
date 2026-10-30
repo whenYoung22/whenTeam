@@ -1,13 +1,5 @@
-import {
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
-import {
-  useOutletContext,
-  useParams,
-  useSearchParams,
-} from "react-router-dom";
+import { useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 
 import { Alert, Button, Empty, message, Spin } from "antd";
 
@@ -17,19 +9,18 @@ import CreateTaskModal from "@/components/ProjectDetailPage/CreateTaskModal";
 import TaskDetailModal from "@/components/ProjectDetailPage/TaskDetailModal";
 
 import useProjectDetailData from "@/hooks/useProjectDetailData";
+
+import useProjectStore from "@/stores/projectStore";
+
 import { setProjectFavorite } from "@/api/project";
 
-import type { ProjectDetailResponse,ProjectListItem,TaskResponse } from "@shared/index";
-
-interface ProjectOutletContext {
-  setProjects: Dispatch<SetStateAction<ProjectListItem[]>>;
-}
+import type { ProjectDetailResponse, TaskResponse } from "@shared/index";
 
 export default function ProjectDetailPage() {
-  const { setProjects } = useOutletContext<ProjectOutletContext>();
   const { projectId } = useParams();
   const id = Number(projectId);
   const isValidId = Number.isSafeInteger(id) && id > 0;
+
   const { project, tasks, loading, error, retry } = useProjectDetailData(id);
 
   if (!isValidId) {
@@ -67,26 +58,32 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <ProjectDetailContent key={id} initialProject={project} initialTasks={tasks} setProjects={setProjects}/>
+    <ProjectDetailContent
+      key={id}
+      initialProject={project}
+      initialTasks={tasks}
+    />
   );
 }
 
 interface ProjectDetailContentProps {
   initialProject: ProjectDetailResponse;
   initialTasks: TaskResponse[];
-  setProjects: Dispatch<SetStateAction<ProjectListItem[]>>;
 }
 
 function ProjectDetailContent({
   initialProject,
   initialTasks,
-  setProjects,
 }: ProjectDetailContentProps) {
+  const updateProject = useProjectStore((state) => state.updateProject);
+
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [project, setProject] = useState(initialProject);
   const [tasks, setTasks] = useState(initialTasks);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [favoritePending, setFavoritePending] = useState(false);
+  
   const taskIdParam = searchParams.get("taskId");
   const taskId = taskIdParam === null ? null : Number(taskIdParam);
   const selectedTask =
@@ -108,20 +105,13 @@ function ProjectDetailContent({
 
   const handleSaveProject = (updated: ProjectDetailResponse) => {
     setProject(updated);
-    setProjects((projects) =>
-      projects.map((item) =>
-        item.id === updated.id
-          ? {
-              ...item,
-              name: updated.name,
-              color: updated.color,
-              progress: updated.progress,
-              taskCount: updated.taskCount,
-              isFavorite: updated.isFavorite,
-            }
-          : item,
-      ),
-    );
+    updateProject(updated.id, {
+      name: updated.name,
+      color: updated.color,
+      progress: updated.progress,
+      taskCount: updated.taskCount,
+      isFavorite: updated.isFavorite,
+    });
   };
 
   const handleFavoriteToggle = async () => {
@@ -132,11 +122,7 @@ function ProjectDetailContent({
         !project.isFavorite,
       );
       setProject((current) => ({ ...current, isFavorite }));
-      setProjects((projects) =>
-        projects.map((item) =>
-          item.id === project.id ? { ...item, isFavorite } : item,
-        ),
-      );
+      updateProject(project.id, { isFavorite });
     } catch (error) {
       message.error(
         error instanceof Error ? error.message : "更新收藏状态失败",
@@ -185,11 +171,7 @@ function ProjectDetailContent({
       taskCount,
       progress,
     }));
-    setProjects((projects) =>
-      projects.map((item) =>
-        item.id === project.id ? { ...item, taskCount, progress } : item,
-      ),
-    );
+    updateProject(project.id, { taskCount, progress });
   };
 
   return (

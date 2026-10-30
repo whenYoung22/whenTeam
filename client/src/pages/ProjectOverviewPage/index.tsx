@@ -1,32 +1,31 @@
 import { Alert, Spin, message } from "antd";
-import { useState, type Dispatch, type SetStateAction } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import OverviewPanel from "@/components/ProjectOverviewPage/OverviewPanel";
 import ProjectList from "@/components/ProjectOverviewPage/ProjectList";
 import CreateProjectModal from "@/components/ProjectOverviewPage/CreateProjectModal";
 
 import useProjectOverview from "@/hooks/useProjectOverview";
+
+import useProjectStore from "@/stores/projectStore";
+
 import { setProjectFavorite } from "@/api/project";
 
-import type {
-  ProjectDetailResponse,
-  ProjectListItem,
-} from "@shared/index";
-
-interface ProjectOutletContext {
-  projects: ProjectListItem[];
-  setProjects: Dispatch<SetStateAction<ProjectListItem[]>>;
-  reloadProjects: () => void;
-}
+import type { ProjectDetailResponse, ProjectListItem } from "@shared/index";
 
 export default function ProjectOverviewPage() {
   const navigate = useNavigate();
-  const { projects, setProjects, reloadProjects } =
-    useOutletContext<ProjectOutletContext>();
+  
+  const projects = useProjectStore((state) => state.projects);
+  const addProject = useProjectStore((state) => state.addProject);
+  const updateProject = useProjectStore((state) => state.updateProject);
+  const reloadProjects = useProjectStore((state) => state.loadProjects);
 
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
-  const [favoritePendingProjectId, setFavoritePendingProjectId] = useState<number | null>(null);
+  const [favoritePendingProjectId, setFavoritePendingProjectId] = useState<
+    number | null
+  >(null);
   const {
     overview,
     loading: overviewLoading,
@@ -46,11 +45,7 @@ export default function ProjectOverviewPage() {
         project.id,
         !project.isFavorite,
       );
-      setProjects((current) =>
-        current.map((item) =>
-          item.id === project.id ? { ...item, isFavorite } : item,
-        ),
-      );
+      updateProject(project.id, { isFavorite });
     } catch (error) {
       message.error(
         error instanceof Error ? error.message : "更新收藏状态失败",
@@ -61,19 +56,16 @@ export default function ProjectOverviewPage() {
   };
 
   const handleProjectCreated = async (project: ProjectDetailResponse) => {
-    setProjects((current) => [
-      {
-        id: project.id,
-        name: project.name,
-        color: project.color,
-        progress: project.progress,
-        taskCount: project.taskCount,
-        isFavorite: project.isFavorite,
-      },
-      ...current,
-    ]);
+    addProject({
+      id: project.id,
+      name: project.name,
+      color: project.color,
+      progress: project.progress,
+      taskCount: project.taskCount,
+      isFavorite: project.isFavorite,
+    });
     setCreateProjectOpen(false);
-    reloadProjects();
+    void reloadProjects();
 
     try {
       await reloadOverview();

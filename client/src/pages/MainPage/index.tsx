@@ -7,7 +7,7 @@ import TopBar from "@/components/common/TopBar";
 import SideBar from "@/components/common/SideBar";
 import Footer from "@/components/common/Footer";
 
-import useProjectList from "@/hooks/useProjectList";
+import useProjectStore from "@/stores/projectStore";
 
 import { getCurrentUser } from "@/api/user";
 import { logout } from "@/api/auth";
@@ -20,8 +20,17 @@ import "./index.css";
 export default function MainPage() {
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { projects, setProjects, error, reload } = useProjectList();
+
+  const projects = useProjectStore((state) => state.projects);
+  const error = useProjectStore((state) => state.error);
+  const loadProjects = useProjectStore((state) => state.loadProjects);
+  const resetProjects = useProjectStore((state) => state.resetProjects);
+  
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    void loadProjects();
+  }, [loadProjects]);
 
   useEffect(() => {
     if (error) message.error(error);
@@ -69,6 +78,7 @@ export default function MainPage() {
     try {
       await logout();
       clearAuthToken();
+      resetProjects();
       navigate("/login", { replace: true });
     } catch (logoutError) {
       message.error(
@@ -97,7 +107,7 @@ export default function MainPage() {
         />
 
         <main className="main-page-content">
-          <Outlet context={{ projects, setProjects, reloadProjects: reload }} />
+          <Outlet />
         </main>
 
         <Footer />
