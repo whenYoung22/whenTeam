@@ -148,6 +148,7 @@ export async function updateTask(
       assigneeId: true,
       project: {
         select: {
+          creatorId: true,
           dueDate: true,
           members: {
             select: { userId: true },
@@ -161,7 +162,16 @@ export async function updateTask(
     throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
   }
 
-  if (existingTask.assigneeId !== userId) {
+  const assigneeIsProjectMember = existingTask.project.members.some(
+    ({ userId: memberId }) => memberId === existingTask.assigneeId,
+  );
+  const isProjectCreatorReassigningOrphanedTask =
+    existingTask.project.creatorId === userId && !assigneeIsProjectMember;
+
+  if (
+    existingTask.assigneeId !== userId &&
+    !isProjectCreatorReassigningOrphanedTask
+  ) {
     throw new AppError(403, "TASK_FORBIDDEN", "只有任务负责人可以修改任务");
   }
 
