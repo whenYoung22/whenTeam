@@ -51,13 +51,3 @@ textarea {
   --color-primary-active: #4f46c8;
   --color-primary-bg: #f0efff;
 }
-
-html {
-  /* scrollbar-gutter: stable; */
-}
-
-html body {
-  /* width: 100% !important; */
-  overflow-y: scroll;
-  /* overflow:hidden; */
-}
