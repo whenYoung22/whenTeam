@@ -25,7 +25,7 @@ export async function login(
   });
 
   if (!user || !(await compare(input.password, user.passwordHash))) {
-    throw new AppError(401, "INVALID_CREDENTIALS", "用户名或密码错误");
+    throw new AppError("INVALID_CREDENTIALS");
   }
   
 // 登录时建立会话 生成 Access Token（无状态 JWT）和 Refresh Token

@@ -6,12 +6,12 @@ import { sendSuccess } from "../utils/response.util.js";
 // 解析并校验路径参数中的通知 ID
 function parseNotificationId(value: string | string[] | undefined): number {
   if (typeof value !== "string") {
-    throw new AppError(400, "INVALID_NOTIFICATION_ID", "通知 ID 无效");
+    throw new AppError("INVALID_NOTIFICATION_ID");
   }
 
   const notificationId = Number(value);
   if (!Number.isSafeInteger(notificationId) || notificationId <= 0) {
-    throw new AppError(400, "INVALID_NOTIFICATION_ID", "通知 ID 无效");
+    throw new AppError("INVALID_NOTIFICATION_ID");
   }
 
   return notificationId;

@@ -12,7 +12,7 @@ export const authMiddleware: RequestHandler = async (req, res, next) => {
   const token = match?.[1];
 
   if (!token) {
-    next(new AppError(401, "AUTH_REQUIRED", "请先登录"));
+    next(new AppError("AUTH_REQUIRED"));
     return;
   }
 
@@ -21,7 +21,7 @@ export const authMiddleware: RequestHandler = async (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof errors.JOSEError) {
-      next(new AppError(401, "INVALID_TOKEN", "登录状态无效或已过期"));
+      next(new AppError("INVALID_TOKEN"));
       return;
     }
 

@@ -1,9 +1,10 @@
 
 import { prisma } from "../lib/prisma.js";
 import { hash } from "bcryptjs";
+import { config } from "../config/index.js";
 
 async function main() {
-  const password = process.env.SEED_USER_PASSWORD;
+  const password = config.seedUserPassword;
   if (!password || Buffer.byteLength(password, "utf8") > 72) {
     throw new Error("SEED_USER_PASSWORD must be set and no more than 72 bytes");
   }

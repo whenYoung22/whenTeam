@@ -13,7 +13,7 @@ export async function getCurrentUser(userId: number): Promise<User> {
   });
 
   if (!user) {
-    throw new AppError(401, "INVALID_TOKEN", "登录状态已失效，请重新登录");
+    throw new AppError("INVALID_TOKEN", "登录状态已失效，请重新登录");
   }
 
   return toUser(user);

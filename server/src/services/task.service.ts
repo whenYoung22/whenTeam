@@ -33,7 +33,7 @@ export async function getProjectTasks(
   });
 
   if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+    throw new AppError("PROJECT_NOT_FOUND");
   }
 
   const tasks = await prisma.task.findMany({
@@ -67,33 +67,21 @@ export async function createProjectTask(
   });
 
   if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+    throw new AppError("PROJECT_NOT_FOUND");
   }
 
   if (!project.members.some(({ userId: memberId }) => memberId === input.assigneeId)) {
-    throw new AppError(
-      400,
-      "ASSIGNEE_NOT_PROJECT_MEMBER",
-      "任务负责人必须是项目成员",
-    );
+    throw new AppError("ASSIGNEE_NOT_PROJECT_MEMBER");
   }
 
   const today = new Date().toISOString().slice(0, 10);
   if (input.dueDate < today) {
-    throw new AppError(
-      400,
-      "TASK_DUE_DATE_IN_PAST",
-      "任务截止日期不能早于今天",
-    );
+    throw new AppError("TASK_DUE_DATE_IN_PAST");
   }
 
   const dueDate = new Date(`${input.dueDate}T00:00:00.000Z`);
   if (dueDate > project.dueDate) {
-    throw new AppError(
-      409,
-      "TASK_DUE_DATE_CONFLICT",
-      "任务截止日期不能晚于项目截止日期",
-    );
+    throw new AppError("TASK_DUE_DATE_CONFLICT");
   }
 
   const result = await prisma.$transaction(async (tx) => {
@@ -164,7 +152,7 @@ export async function updateTask(
   });
 
   if (!existingTask) {
-    throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
+    throw new AppError("TASK_NOT_FOUND");
   }
 
   const assigneeIsProjectMember = existingTask.project.members.some(
@@ -177,7 +165,7 @@ export async function updateTask(
     existingTask.assigneeId !== userId &&
     !isProjectCreatorReassigningOrphanedTask
   ) {
-    throw new AppError(403, "TASK_FORBIDDEN", "只有任务负责人可以修改任务");
+    throw new AppError("TASK_FORBIDDEN", "只有任务负责人可以修改任务");
   }
 
   if (
@@ -186,11 +174,7 @@ export async function updateTask(
       ({ userId: memberId }) => memberId === input.assigneeId,
     )
   ) {
-    throw new AppError(
-      400,
-      "ASSIGNEE_NOT_PROJECT_MEMBER",
-      "任务负责人必须是项目成员",
-    );
+    throw new AppError("ASSIGNEE_NOT_PROJECT_MEMBER");
   }
 
   const dueDate =
@@ -198,11 +182,7 @@ export async function updateTask(
       ? undefined
       : new Date(`${input.dueDate}T00:00:00.000Z`);
   if (dueDate && dueDate > existingTask.project.dueDate) {
-    throw new AppError(
-      409,
-      "TASK_DUE_DATE_CONFLICT",
-      "任务截止日期不能晚于项目截止日期",
-    );
+    throw new AppError("TASK_DUE_DATE_CONFLICT");
   }
 
   const data: Prisma.TaskUncheckedUpdateInput = {};
@@ -285,15 +265,11 @@ export async function deleteTask(userId: number, taskId: number): Promise<void> 
       },
     });
     if (!task) {
-      throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
+      throw new AppError("TASK_NOT_FOUND");
     }
 
     if (task.assigneeId !== userId && task.project.creatorId !== userId) {
-      throw new AppError(
-        403,
-        "TASK_FORBIDDEN",
-        "只有项目创建者或任务负责人可以删除任务",
-      );
+      throw new AppError("TASK_FORBIDDEN", "只有项目创建者或任务负责人可以删除任务");
     }
 
     await tx.notification.deleteMany({ where: { taskId } });
@@ -326,7 +302,7 @@ export async function deleteTask(userId: number, taskId: number): Promise<void> 
       },
     });
     if (result.count === 0) {
-      throw new AppError(404, "TASK_NOT_FOUND", "任务不存在");
+      throw new AppError("TASK_NOT_FOUND");
     }
 
     return notificationReceiverIds;

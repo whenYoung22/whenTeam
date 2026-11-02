@@ -1,6 +1,7 @@
 // 签发和验证 Access Token（JWT），包括设置有效期、签名和检查声明
 
 import { SignJWT, jwtVerify } from "jose";
+import { config } from "../config/index.js";
 import { AppError } from "./AppError.util.js";
 
 const issuer = "whenteam";
@@ -8,14 +9,7 @@ const audience = "whenteam-client";
 
 // 获读取保存在服务器环境变量 AUTH_JWT_SECRET 中的 JWT 签名密钥
 export function getAuthSecret(): Uint8Array {
-  const secret = process.env.AUTH_JWT_SECRET;
-
-  // 密钥长度检查
-  if (!secret || Buffer.byteLength(secret, "utf8") < 32) {
-    throw new Error("AUTH_JWT_SECRET must contain at least 32 bytes");
-  }
-
-  return new TextEncoder().encode(secret);
+  return new TextEncoder().encode(config.authJwtSecret);
 }
 
 // 签发AccessToken
@@ -39,12 +33,12 @@ export async function verifyAccessToken(token: string): Promise<number> {
     audience,
   });
   if (!payload.sub || !/^[1-9]\d*$/.test(payload.sub)) {
-    throw new AppError(401, "INVALID_TOKEN", "登录状态无效或已过期");
+    throw new AppError("INVALID_TOKEN");
   }
 
   const userId = Number(payload.sub);
   if (!Number.isSafeInteger(userId)) {
-    throw new AppError(401, "INVALID_TOKEN", "登录状态无效或已过期");
+    throw new AppError("INVALID_TOKEN");
   }
   return userId;
 }

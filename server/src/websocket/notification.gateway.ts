@@ -2,8 +2,8 @@
 import type { Server as HttpServer } from "node:http";
 import { WebSocket, WebSocketServer } from "ws";
 
+import { config } from "../config/index.js";
 import { verifyAccessToken } from "../utils/access-token.util.js";
-import { getClientOrigins } from "../utils/client-origins.util.js";
 
 const authenticationTimeoutMs = 5_000;  // 未认证连接最多存活 5 秒
 const authenticationRequiredCloseCode = 4_401;  // 未认证 / token 无效
@@ -51,8 +51,7 @@ export function createNotificationWebSocketServer(
     maxPayload: 1_024,                // 单条消息最大 1KB，防大包攻击
     perMessageDeflate: false,        // 关闭压缩，省 CPU、避免压缩炸弹
     verifyClient: ({ origin }, callback) => {
-      const allowedOrigins = getClientOrigins();
-      const allowed = !origin || allowedOrigins.includes(origin);
+      const allowed = !origin || config.clientOrigins.includes(origin);
       callback(allowed, allowed ? undefined : 403, "Origin not allowed");
     },
   });

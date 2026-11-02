@@ -57,7 +57,7 @@ export const refreshController: RequestHandler = async (req, res, next) => {
   const refreshToken = getRefreshTokenCookie(req);
   if (!refreshToken) {
     clearRefreshTokenCookie(res);
-    next(new AppError(401, "INVALID_REFRESH_TOKEN", "登录已失效，请重新登录"));
+    next(new AppError("INVALID_REFRESH_TOKEN"));
     return;
   }
 

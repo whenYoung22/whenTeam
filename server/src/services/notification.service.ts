@@ -78,7 +78,7 @@ export async function markNotificationRead(
   });
 
   if (!notification) {
-    throw new AppError(404, "NOTIFICATION_NOT_FOUND", "通知不存在");
+    throw new AppError("NOTIFICATION_NOT_FOUND");
   }
 
   if (!notification.isRead) {

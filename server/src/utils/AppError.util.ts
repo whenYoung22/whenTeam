@@ -1,10 +1,12 @@
+import { errorDictionary, type ErrorCode } from "./errorDictionary.util.js";
+
 export class AppError extends Error {
   public readonly statusCode: number;
-  public readonly code: string;
+  public readonly code: ErrorCode;
 
-  constructor(statusCode: number, code: string, message: string) {
-    super(message);
-    this.statusCode = statusCode;
+  constructor(code: ErrorCode, message?: string) {
+    super(message ?? errorDictionary[code].message);
+    this.statusCode = errorDictionary[code].statusCode;
     this.code = code;
     this.name = "AppError";
 

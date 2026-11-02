@@ -38,7 +38,7 @@ export async function register(
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
-      throw new AppError(409, "USERNAME_TAKEN", "用户名已被使用");
+      throw new AppError("USERNAME_TAKEN");
     }
     throw error;
   }

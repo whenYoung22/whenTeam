@@ -14,12 +14,12 @@ import {
 
 function parseProjectId(value: string | string[] | undefined): number {
   if (typeof value !== "string") {
-    throw new AppError(400, "INVALID_PROJECT_ID", "项目 ID 无效");
+    throw new AppError("INVALID_PROJECT_ID");
   }
 
   const projectId = Number(value);
   if (!Number.isSafeInteger(projectId) || projectId <= 0) {
-    throw new AppError(400, "INVALID_PROJECT_ID", "项目 ID 无效");
+    throw new AppError("INVALID_PROJECT_ID");
   }
 
   return projectId;
@@ -27,12 +27,12 @@ function parseProjectId(value: string | string[] | undefined): number {
 
 function parseTaskId(value: string | string[] | undefined): number {
   if (typeof value !== "string") {
-    throw new AppError(400, "INVALID_TASK_ID", "任务 ID 无效");
+    throw new AppError("INVALID_TASK_ID");
   }
 
   const taskId = Number(value);
   if (!Number.isSafeInteger(taskId) || taskId <= 0) {
-    throw new AppError(400, "INVALID_TASK_ID", "任务 ID 无效");
+    throw new AppError("INVALID_TASK_ID");
   }
 
   return taskId;

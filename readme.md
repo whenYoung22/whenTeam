@@ -57,7 +57,7 @@ whenTeam/
 │
 │
 ├── shared/              # 前后端共享类型与常量
-├── docs/                # 项目文档
+├── doc/                 # 项目文档
 └── package.json         # 根目录开发脚本
 ```
 
@@ -71,7 +71,7 @@ whenTeam/
 
 ## 核心功能
 
-+ **用户认证**：登录、退出及身份验证。
++ **用户认证**：注册、登录、退出及身份验证；使用 HttpOnly Refresh Token Cookie 轮换令牌。
 + **项目管理**：查看项目列表、查看项目详情、创建、编辑和删除项目。
 + **任务管理**：创建、编辑、删除任务，修改任务状态和优先级。
 + **通知管理**：查看通知和未读数；删除项目或任务后向其他项目成员发送通知。
@@ -227,8 +227,11 @@ subscribeToNotificationChanges(fn)  ← 订阅者（组件监听）
 - `DateOnly` 使用 `YYYY-MM-DD`，用于截止日期等日历日期。
 - `IsoDateTime` 使用 UTC ISO 8601 格式 `YYYY-MM-DDTHH:mm:ss.sssZ`，用于创建和更新时间。响应中传字符串，不传 JavaScript `Date`。
 - 任务状态和优先级使用大写枚举值；中文标签和 UI 样式只在前端映射。
-- 成功响应使用 `{ "data": ... }`；错误响应使用 `{ "error": { "code": "...", "message": "..." } }`。
+- 业务接口成功响应使用 `{ "success": true, "data": ... }`；错误响应使用 `{ "error": { "code": "...", "message": "..." } }`。
+- 错误码对应的 HTTP 状态和默认消息由服务端统一维护；请求校验错误为 `VALIDATION_ERROR`，未匹配路由为 `NOT_FOUND`，未处理异常为 `INTERNAL_SERVER_ERROR`。
 - 这些 TypeScript 类型不会在运行时校验请求；服务端需在 `validations/` 中校验输入和日期格式。
+
+完整接口列表、请求示例、错误码和手动测试流程见[API 手动测试指南](doc/api.md)。
 
 
 
@@ -339,8 +342,6 @@ taskId (nullable)
 isRead
 createdAt
 ```
-
-
 
 
 

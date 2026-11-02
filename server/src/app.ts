@@ -10,11 +10,12 @@ import notificationRoutes from "./routes/notification.routes.js";
 
 import { authMiddleware } from "./middlewares/auth.middleware.js";
 import { errorMiddleware } from "./middlewares/error.middlerware.js";
-import { getClientOrigins } from "./utils/client-origins.util.js";
+import { config } from "./config/index.js";
+import { sendError } from "./utils/response.util.js";
 
 const app = express();
 
-app.use(cors({ origin: getClientOrigins(), credentials: true }));
+app.use(cors({ origin: config.clientOrigins, credentials: true }));
 
 app.use(express.json());
 
@@ -51,10 +52,7 @@ app.use("/api/notifications", notificationRoutes);
 
 // 处理 404 的普通中间件 如果请求走到了这里，说明前面的路由都没匹配上
 app.use((_req, res) => {
-  res.status(404).json({
-    success: false,
-    error: { code: "NOT_FOUND", message: "接口不存在" }
-  });
+  sendError(res, "NOT_FOUND");
 });
 
 

@@ -1,13 +1,14 @@
 // 负责RefreshToken Cookie的读取、设置和清除，不负责验证 Token 或管理数据库会话；在auth.controller中调用
 
 import type { Request, Response } from "express";
+import { config } from "../config/index.js";
 import { refreshTokenLifetimeMs } from "./auth.constants.js";
 
 export const refreshTokenCookieName = "whenteam.refreshToken";
 
 const refreshTokenCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: config.nodeEnv === "production",
   sameSite: "lax" as const,
   path: "/api/auth",
   maxAge: refreshTokenLifetimeMs,

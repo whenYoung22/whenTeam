@@ -108,7 +108,7 @@ export async function rotateRefreshToken(refreshToken: string): Promise<{
   });
 
   if (!rotated) {
-    throw new AppError(401, "INVALID_REFRESH_TOKEN", "登录已失效，请重新登录");
+    throw new AppError("INVALID_REFRESH_TOKEN");
   }
 
   return rotated;

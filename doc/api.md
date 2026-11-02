@@ -2,7 +2,7 @@
 
 ## 
 
-本文档对应当前已经实现的后端接口，适用于 Postman、Thunder Client 等 HTTP 客户端。当前实现健康检查、注册和登录认证、项目接口、项目收藏接口和项目任务查询/创建接口；任务更新接口尚未接入。
+本文档对应当前已经实现的后端接口，适用于 Postman、Thunder Client 等 HTTP 客户端，包含注册登录、Refresh Token 轮换、项目和任务管理等 API。
 
 ## 1. 启动服务
 
@@ -37,20 +37,61 @@
 
 - 所有项目接口的基础地址为 `http://localhost:3000/api/projects`。
 - 请求体为 JSON 时设置 `Content-Type: application/json`。
-- 除健康检查和未匹配路由外，成功响应使用 `{ "success": true, "data": ... }`。
-- 统一错误中间件响应使用 `{ "error": { "code": "...", "message": "..." } }`。
+- 成功响应使用 `{ "success": true, "data": ... }`。
+- 错误响应统一使用 `{ "error": { "code": "...", "message": "..." } }`，HTTP 状态码和错误码对应关系见下方错误码参考。
 - 日期使用 `YYYY-MM-DD`；时间戳使用 UTC ISO 8601 格式。
 - 项目 ID 和成员 ID 都是数据库中的数字 ID。
 - 登录或注册成功后服务端签发 15 分钟有效期的 Access Token，并通过 HttpOnly Cookie 设置有效期为 7 天的 Refresh Token。
-- 项目和任务接口必须在 `Authorization: Bearer <Access Token>` 请求头中携带令牌；浏览器请求会自动携带 Refresh Token Cookie。
+- 所有受保护的接口都需要在 `Authorization` 请求头中使用 Bearer 认证并提供 Access Token；浏览器请求会自动携带 Refresh Token Cookie。
 - Refresh Token 仅以 SHA-256 哈希保存在服务端；每次刷新都会轮换，旧 Token 重放会撤销该登录会话族。
 - API 使用带凭证的 CORS，仅允许 `CLIENT_ORIGINS` 中列出的前端 origin；本地前端直接连接后端，不通过 Vite 代理。
+
+### 错误响应与错误码
+
+统一错误响应示例：
+
+```json
+{
+  "error": {
+    "code": "INVALID_PROJECT_ID",
+    "message": "项目 ID 无效"
+  }
+}
+```
+
+`code` 用于客户端识别错误，`message` 是面向用户的说明。表中消息是默认值；部分业务错误可以返回更具体的消息，但错误码和 HTTP 状态码保持不变。
+
+| HTTP 状态 | 错误码 | 默认消息 |
+| --- | --- | --- |
+| 400 | `INVALID_NOTIFICATION_ID` | 通知 ID 无效 |
+| 400 | `INVALID_PROJECT_ID` | 项目 ID 无效 |
+| 400 | `INVALID_TASK_ID` | 任务 ID 无效 |
+| 400 | `VALIDATION_ERROR` | 请求参数无效 |
+| 400 | `MEMBER_NOT_FOUND` | 部分项目成员不存在 |
+| 400 | `ASSIGNEE_NOT_PROJECT_MEMBER` | 任务负责人必须是项目成员 |
+| 400 | `TASK_DUE_DATE_IN_PAST` | 任务截止日期不能早于今天 |
+| 401 | `AUTH_REQUIRED` | 请先登录 |
+| 401 | `INVALID_TOKEN` | 登录状态无效或已过期 |
+| 401 | `INVALID_REFRESH_TOKEN` | 登录已失效，请重新登录 |
+| 401 | `INVALID_CREDENTIALS` | 用户名或密码错误 |
+| 403 | `PROJECT_FORBIDDEN` | 无权操作此项目 |
+| 403 | `TASK_FORBIDDEN` | 无权操作此任务 |
+| 404 | `NOTIFICATION_NOT_FOUND` | 通知不存在 |
+| 404 | `PROJECT_NOT_FOUND` | 项目不存在 |
+| 404 | `TASK_NOT_FOUND` | 任务不存在 |
+| 404 | `NOT_FOUND` | 接口不存在 |
+| 409 | `USERNAME_TAKEN` | 用户名已被使用 |
+| 409 | `TASK_DUE_DATE_CONFLICT` | 任务截止日期不能晚于项目截止日期 |
+| 409 | `PROJECT_DUE_DATE_CONFLICT` | 项目截止日期不能早于已有任务的截止日期 |
+| 409 | `DUPLICATE_ENTRY` | 数据已存在 |
+| 500 | `INTERNAL_SERVER_ERROR` | 服务器内部错误 |
+
+服务端将业务异常映射为对应错误码；请求参数校验失败返回 `VALIDATION_ERROR`，数据库唯一约束冲突返回 `DUPLICATE_ENTRY`，其他未处理异常返回 `INTERNAL_SERVER_ERROR`。未匹配的 API 路由返回 `NOT_FOUND`。
 
 ## 3. 接口列表
 
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
-| GET | `/api/health` | 检查服务是否启动 |
 | POST | `/api/auth/register` | 创建用户并登录 |
 | POST | `/api/auth/login` | 用户名和密码登录 |
 | POST | `/api/auth/refresh` | 轮换 Refresh Token 并获取新的 Access Token |
@@ -64,6 +105,8 @@
 | DELETE | `/api/projects/:projectId/favorite` | 取消收藏项目 |
 | GET | `/api/projects/:projectId/tasks` | 查询项目任务列表 |
 | POST | `/api/projects/:projectId/tasks` | 创建项目任务 |
+| PATCH | `/api/tasks/:taskId` | 更新项目任务 |
+| DELETE | `/api/tasks/:taskId` | 删除项目任务 |
 | POST | `/api/projects` | 创建项目 |
 | PATCH | `/api/projects/:projectId` | 更新项目 |
 
@@ -158,11 +201,7 @@ Cookie 使用 `HttpOnly`、`SameSite=Lax` 和 `/api/auth` 路径；生产环境�
 
 `GET /api/me`
 
-请求头需要包含登录接口返回的 JWT：
-
-```http
-Authorization: Bearer <JWT>
-```
+请求头需要使用 Bearer 认证方案，并提供登录接口返回的 JWT。
 
 返回当前用户公开信息，不包含密码哈希。缺少、无效或过期的 token 返回 HTTP 401。
 
@@ -189,22 +228,7 @@ Authorization: Bearer <JWT>
 }
 ```
 
-### 4.5 健康检查
-
-`GET /api/health`
-
-不需要请求体，也不需要数据库数据。
-
-成功响应（HTTP 200）：
-
-```json
-{
-  "success": true,
-  "message": "whenTeam server is running"
-}
-```
-
-### 4.6 查询项目列表
+### 4.7 查询项目列表
 
 `GET /api/projects`
 
@@ -230,7 +254,7 @@ Authorization: Bearer <JWT>
 
 没有项目时 `data` 是空数组。
 
-### 4.7 查询项目总览
+### 4.8 查询项目总览
 
 `GET /api/projects/overview`
 
@@ -263,7 +287,7 @@ Authorization: Bearer <JWT>
 - `collaborators`：当前用户所有项目中的去重成员，包含当前用户。没有头像的用户不返回 `avatarUrl`。
 - `collaboratorCount`：去重后的成员数量。
 
-### 4.8 查询项目详情
+### 4.9 查询项目详情
 
 `GET /api/projects/:projectId`
 
@@ -302,7 +326,7 @@ Authorization: Bearer <JWT>
 
 `progress` 是已完成任务（状态为 `DONE`）占全部任务的百分比，四舍五入为整数；没有任务时为 `0`。`description` 没有内容时返回空字符串。
 
-### 4.9 收藏或取消收藏项目
+### 4.10 收藏或取消收藏项目
 
 收藏：
 
@@ -334,7 +358,7 @@ Authorization: Bearer <JWT>
 | 项目 ID 不是正整数 | 400 | `INVALID_PROJECT_ID` |
 | 项目不存在或当前用户不是成员 | 404 | `PROJECT_NOT_FOUND` |
 
-### 4.10 查询项目任务列表
+### 4.11 查询项目任务列表
 
 `GET /api/projects/:projectId/tasks`
 
@@ -369,7 +393,7 @@ Authorization: Bearer <JWT>
 
 项目没有任务时，`data` 返回空数组。
 
-### 4.11 创建项目任务
+### 4.12 创建项目任务
 
 `POST /api/projects/:projectId/tasks`
 
@@ -432,43 +456,71 @@ Authorization: Bearer <JWT>
 
 
 
-### 4.12 更新项目任务
+### 4.13 更新项目任务
 
 `PATCH /api/tasks/:taskId`
 
+可只提交需要修改的字段，至少提供一个字段。请求体示例：
 
-
-`UpdateTaskRequest`
-
-
-
-```
-export interface UpdateTaskRequest {
-  title?: string;
-  description?: string;
-  status?: TaskStatus;
-  priority?: TaskPriority;
-  assigneeId?: number;
-  dueDate?: DateOnly;
-}
-
-
+```json
 {
-  "title": "实现创建任务接口",
-  "description": "为项目成员开放创建任务功能",
-  "status": "TODO" | "DOING" | "DONE",
-  "priority": "MEDIUM",
-  "assigneeId": 1,
+  "title": "更新后的任务标题",
+  "description": "补充任务说明",
+  "status": "DOING",
+  "priority": "HIGH",
+  "assigneeId": 2,
   "dueDate": "2026-11-20"
 }
-
 ```
 
+约束：
 
+- `title`：去除首尾空格后不能为空，最多 200 个字符。
+- `description`：可省略，最多 5000 个字符。
+- `status`：可选值为 `TODO`、`DOING`、`DONE`。
+- `priority`：可选值为 `LOW`、`MEDIUM`、`HIGH`。
+- `assigneeId`：必须是项目成员的正整数 ID。
+- `dueDate`：必须是有效的 `YYYY-MM-DD` 日期，不能晚于项目截止日期。
+- 多传未定义字段会校验失败；省略字段表示不修改，不能传 `null` 清空。
+- 任务负责人可以更新自己的任务；项目创建者可以重新分配负责人已不在项目中的任务。
 
+成功时返回 HTTP 200，`data` 为更新后的 `TaskResponse`，结构同“查询项目任务列表”中的单个任务。
 
+常见失败：
 
-### 4.13 创建项目
+| 情况 | HTTP 状态 | 错误码 |
+| --- | --- | --- |
+| 任务 ID 不是正整数 | 400 | `INVALID_TASK_ID` |
+| 请求体格式不合法或没有可更新字段 | 400 | `VALIDATION_ERROR` |
+| 任务不存在或当前用户不是项目成员 | 404 | `TASK_NOT_FOUND` |
+| 当前用户无权更新任务 | 403 | `TASK_FORBIDDEN` |
+| 负责人不是项目成员 | 400 | `ASSIGNEE_NOT_PROJECT_MEMBER` |
+| 任务截止日期晚于项目截止日期 | 409 | `TASK_DUE_DATE_CONFLICT` |
+
+### 4.14 删除项目任务
+
+`DELETE /api/tasks/:taskId`
+
+只有项目创建者或任务负责人可以删除任务，且请求用户必须仍是项目成员。无需请求体。删除成功返回 HTTP 200：
+
+```json
+{
+  "success": true,
+  "data": null
+}
+```
+
+删除任务时服务端也会清理关联通知，并向项目中的其他成员发送任务删除通知。
+
+常见失败：
+
+| 情况 | HTTP 状态 | 错误码 |
+| --- | --- | --- |
+| 任务 ID 不是正整数 | 400 | `INVALID_TASK_ID` |
+| 任务不存在或当前用户不是项目成员 | 404 | `TASK_NOT_FOUND` |
+| 当前用户既不是项目创建者也不是任务负责人 | 403 | `TASK_FORBIDDEN` |
+
+### 4.15 创建项目
 
 `POST /api/projects`
 
@@ -500,7 +552,7 @@ export interface UpdateTaskRequest {
 | 请求体格式或字段不合法 | 400 | `VALIDATION_ERROR` |
 | 有成员 ID 不存在 | 400 | `MEMBER_NOT_FOUND` |
 
-### 4.14 更新项目
+### 4.16 更新项目
 
 `PATCH /api/projects/:projectId`
 
@@ -549,24 +601,24 @@ export interface UpdateTaskRequest {
    - **登出**：重新登录后调用 `POST /api/auth/logout`，确认 Cookie 被清除，之后用该 Refresh Token 调用刷新接口应返回 401。已签发的 Access Token 仍可能在剩余有效期内使用。
 4. **当前用户与用户目录**：用登录返回的 Access Token 调用 `GET /api/me` 和 `GET /api/users`，确认用户目录返回所有用户的公开信息，不包含密码哈希。
 5. **认证边界**：不带 Access Token 或使用无效/过期 Access Token 调用项目接口，预期 HTTP 401；浏览器端过期时应自动刷新并重试一次。
-6. **健康检查**：调用 `GET /api/health`，确认服务可连接。
-7. **列表与总览**：携带 `Authorization: Bearer <JWT>` 调用 `GET /api/projects` 和 `GET /api/projects/overview`，确认响应字段、空数组和统计值符合数据库数据。
-8. **创建项目成功**：用一个有效且不同于当前登录用户的成员 ID 创建项目，记录响应中的项目 ID。
-9. **创建校验用例**：分别测试空 `memberIds` 和只包含当前用户（都应成功创建并自动加入创建者），以及无效日期、额外字段和不存在的成员 ID。
-10. **详情查询**：以创建项目时登录的账户查询刚创建的项目；检查详情中的成员、任务数和进度。
-11. **更新成功**：以创建者修改名称或描述，再 GET 确认变更持久化；单独测试 `memberIds: []` 会保留创建者。
-12. **权限验证**：使用项目的其他成员账户重新登录后尝试更新，预期 403；使用非成员查询详情，预期 404。
-13. **创建任务**：项目成员调用 `POST /api/projects/:projectId/tasks`，确认任务状态默认为 `TODO`，任务出现在列表中，项目任务数和进度同步更新。
-14. **任务创建校验**：测试不存在的项目、非项目成员负责人、无效日期，以及晚于项目截止日期的任务截止日期。
+6. **列表与总览**：在 `Authorization` 请求头中使用登录返回的 Access Token 作为 Bearer 凭证，调用 `GET /api/projects` 和 `GET /api/projects/overview`，确认响应字段、空数组和统计值符合数据库数据。
+7. **创建项目成功**：用一个有效且不同于当前登录用户的成员 ID 创建项目，记录响应中的项目 ID。
+8. **创建校验用例**：分别测试空 `memberIds` 和只包含当前用户（都应成功创建并自动加入创建者），以及无效日期、额外字段和不存在的成员 ID。
+9. **详情查询**：以创建项目时登录的账户查询刚创建的项目；检查详情中的成员、任务数和进度。
+10. **更新成功**：以创建者修改名称或描述，再 GET 确认变更持久化；单独测试 `memberIds: []` 会保留创建者。
+11. **权限验证**：使用项目的其他成员账户重新登录后尝试更新，预期 403；使用非成员查询详情，预期 404。
+12. **创建任务**：项目成员调用 `POST /api/projects/:projectId/tasks`，确认任务状态默认为 `TODO`，任务出现在列表中，项目任务数和进度同步更新。
+13. **任务创建校验**：测试不存在的项目、非项目成员负责人、无效日期，以及晚于项目截止日期的任务截止日期。
+14. **更新任务**：以任务负责人调用 `PATCH /api/tasks/:taskId` 修改状态或优先级，确认响应和后续查询已更新；用无权成员测试 403。
 15. **任务列表**：调用 `GET /api/projects/:projectId/tasks`，确认项目成员可读取任务，非成员返回 404；项目无任务时应返回空数组。
-16. **收藏项目**：项目成员调用 `PUT /api/projects/:projectId/favorite`，确认返回 `isFavorite: true`；重复调用仍成功且项目只存在一条该用户的收藏关系。
-17. **取消收藏**：调用 `DELETE /api/projects/:projectId/favorite`，确认返回 `isFavorite: false`；重复调用仍成功，并且其他成员的收藏状态不受影响。
-18. **收藏状态读取和权限**：重新查询列表和详情确认 `isFavorite` 持久化；非项目成员调用收藏或取消收藏接口应返回 404。
+16. **删除任务**：以任务负责人或项目创建者调用 `DELETE /api/tasks/:taskId`，确认返回 `data: null` 且任务已删除；用无权成员测试 403。
+17. **收藏项目**：项目成员调用 `PUT /api/projects/:projectId/favorite`，确认返回 `isFavorite: true`；重复调用仍成功且项目只存在一条该用户的收藏关系。
+18. **取消收藏**：调用 `DELETE /api/projects/:projectId/favorite`，确认返回 `isFavorite: false`；重复调用仍成功，并且其他成员的收藏状态不受影响。
+19. **收藏状态读取和权限**：重新查询列表和详情确认 `isFavorite` 持久化；非项目成员调用收藏或取消收藏接口应返回 404。
 
 如果测试失败，记录请求方法和 URL、请求体、HTTP 状态码和响应 JSON。排查时不要把数据库密码、JWT 密钥、密码或 token 贴出来。
 
 ## 6. 当前已知限制
 
-- 用户注册、登录和当前用户查询已实现；密码修改/重置及 token 刷新尚未实现。开发账户仍可由 `seed:dev-user` 脚本创建或重置。
-- 任务列表查询和创建 API 已实现；更新和删除任务的 API 尚未实现。
-- 未匹配的 URL 使用普通 404 响应：`{ "success": false, "error": { "code": "NOT_FOUND", "message": "接口不存在" } }`。
+- 用户注册、登录、Refresh Token 轮换和当前用户查询已实现；密码修改/重置尚未实现。开发账户仍可由 `seed:dev-user` 脚本创建或重置。
+- 未匹配的 URL 返回 HTTP 404，响应格式为 `{ "error": { "code": "NOT_FOUND", "message": "接口不存在" } }`。

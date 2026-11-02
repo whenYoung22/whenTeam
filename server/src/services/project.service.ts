@@ -73,7 +73,7 @@ export async function getProject(
   });
 
   if (!project) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+    throw new AppError("PROJECT_NOT_FOUND");
   }
 
   const favorite = await prisma.projectFavorite.findUnique({
@@ -100,7 +100,7 @@ export async function setProjectFavorite(
   });
 
   if (!membership) {
-    throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+    throw new AppError("PROJECT_NOT_FOUND");
   }
 
   if (isFavorite) {
@@ -138,7 +138,7 @@ export async function createProject(
     });
 
     if (users.length !== memberIds.length) {
-      throw new AppError(400, "MEMBER_NOT_FOUND", "部分项目成员不存在");
+      throw new AppError("MEMBER_NOT_FOUND");
     }
 
     const project = await tx.project.create({
@@ -204,11 +204,11 @@ export async function updateProject(
     });
 
     if (!existingProject) {
-      throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+      throw new AppError("PROJECT_NOT_FOUND");
     }
 
     if (existingProject.creatorId !== userId) {
-      throw new AppError(403, "PROJECT_FORBIDDEN", "只有项目创建者可以修改项目");
+      throw new AppError("PROJECT_FORBIDDEN", "只有项目创建者可以修改项目");
     }
 
     const updateData: {
@@ -232,11 +232,7 @@ export async function updateProject(
       });
 
       if (taskAfterDueDate) {
-        throw new AppError(
-          409,
-          "PROJECT_DUE_DATE_CONFLICT",
-          "项目截止日期不能早于已有任务的截止日期",
-        );
+        throw new AppError("PROJECT_DUE_DATE_CONFLICT");
       }
 
       updateData.dueDate = dueDate;
@@ -256,7 +252,7 @@ export async function updateProject(
       });
 
       if (users.length !== memberIds.length) {
-        throw new AppError(400, "MEMBER_NOT_FOUND", "部分项目成员不存在");
+        throw new AppError("MEMBER_NOT_FOUND");
       }
 
       const existingMemberIds = new Set(
@@ -372,11 +368,11 @@ export async function deleteProject(
     });
 
     if (!project) {
-      throw new AppError(404, "PROJECT_NOT_FOUND", "项目不存在");
+      throw new AppError("PROJECT_NOT_FOUND");
     }
 
     if (project.creatorId !== userId) {
-      throw new AppError(403, "PROJECT_FORBIDDEN", "只有项目创建者可以删除项目");
+      throw new AppError("PROJECT_FORBIDDEN", "只有项目创建者可以删除项目");
     }
 
     await tx.notification.deleteMany({ where: { projectId } });
